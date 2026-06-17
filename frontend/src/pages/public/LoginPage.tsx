@@ -20,6 +20,7 @@ export function LoginPage() {
   const location = useLocation();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [rememberMe, setRememberMe] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -43,40 +44,40 @@ export function LoginPage() {
   return (
     <AuthShell
       documentTitle="CourseGrid | Login"
-      title="Welcome Back"
-      subtitle="Enter your credentials to access your courses."
+      title="Welcome back"
+      subtitle="Let's continue your learning journey."
     >
-      <form className="space-y-5" onSubmit={handleSubmit}>
-        <div className="space-y-1.5">
+      <form className="space-y-6" onSubmit={handleSubmit}>
+        <div>
           <label
             htmlFor="email"
-            className="ml-4 text-xs font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500"
+            className="text-sm font-bold text-slate-800"
           >
-            Email Address
+            Email address
           </label>
-          <div className="flex h-12 items-center rounded-full border border-slate-200 bg-slate-50/50 px-5 transition-all focus-within:border-indigo-500 focus-within:ring-2 focus-within:ring-indigo-500/50 dark:border-slate-800 dark:bg-slate-900">
-            <Mail className="h-4 w-4 text-slate-400" aria-hidden="true" />
+          <div className="mt-3 flex h-12 items-center rounded-lg border border-slate-200 bg-white px-4 transition focus-within:border-blue-500 focus-within:ring-4 focus-within:ring-blue-100">
+            <Mail className="h-5 w-5 text-slate-400" aria-hidden="true" />
             <input
               id="email"
               type="email"
               value={email}
               onChange={(event) => setEmail(event.target.value)}
               required
-              placeholder="admin@coursegrid.com"
-              className="ml-3 min-w-0 flex-1 border-0 bg-transparent text-sm font-medium text-slate-800 outline-none placeholder:text-slate-400 dark:text-white"
+              placeholder="you@example.com"
+              className="ml-3 min-w-0 flex-1 border-0 bg-transparent text-base font-medium text-slate-900 outline-none placeholder:text-slate-400"
             />
           </div>
         </div>
 
-        <div className="space-y-1.5">
+        <div>
           <label
             htmlFor="password"
-            className="ml-4 text-xs font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500"
+            className="text-sm font-bold text-slate-800"
           >
             Password
           </label>
-          <div className="flex h-12 items-center rounded-full border border-slate-200 bg-slate-50/50 px-5 transition-all focus-within:border-indigo-500 focus-within:ring-2 focus-within:ring-indigo-500/50 dark:border-slate-800 dark:bg-slate-900">
-            <LockKeyhole className="h-4 w-4 text-slate-400" aria-hidden="true" />
+          <div className="mt-3 flex h-12 items-center rounded-lg border border-slate-200 bg-white px-4 transition focus-within:border-blue-500 focus-within:ring-4 focus-within:ring-blue-100">
+            <LockKeyhole className="h-5 w-5 text-slate-400" aria-hidden="true" />
             <input
               id="password"
               type={showPassword ? "text" : "password"}
@@ -84,25 +85,40 @@ export function LoginPage() {
               onChange={(event) => setPassword(event.target.value)}
               required
               placeholder="Enter your password"
-              className="ml-3 min-w-0 flex-1 border-0 bg-transparent text-sm font-medium text-slate-800 outline-none placeholder:text-slate-400 dark:text-white"
+              className="ml-3 min-w-0 flex-1 border-0 bg-transparent text-base font-medium text-slate-900 outline-none placeholder:text-slate-400"
             />
             <button
               type="button"
               onClick={() => setShowPassword((current) => !current)}
-              className="ml-2 rounded-full p-1.5 text-slate-400 transition hover:bg-slate-100 hover:text-slate-600 dark:hover:bg-slate-800 dark:hover:text-slate-200"
+              className="ml-2 rounded-md p-1.5 text-slate-400 transition hover:bg-slate-100 hover:text-slate-600"
               aria-label={showPassword ? "Hide password" : "Show password"}
             >
               {showPassword ? (
-                <EyeOff className="h-4 w-4" aria-hidden="true" />
+                <EyeOff className="h-5 w-5" aria-hidden="true" />
               ) : (
-                <Eye className="h-4 w-4" aria-hidden="true" />
+                <Eye className="h-5 w-5" aria-hidden="true" />
               )}
             </button>
           </div>
         </div>
 
+        <div className="flex items-center justify-between gap-4 text-sm">
+          <label className="inline-flex items-center gap-3 font-medium text-slate-600">
+            <input
+              type="checkbox"
+              checked={rememberMe}
+              onChange={(event) => setRememberMe(event.target.checked)}
+              className="h-4 w-4 rounded border-slate-300 text-blue-600 focus:ring-blue-500"
+            />
+            Remember me
+          </label>
+          <button type="button" className="font-semibold text-blue-600 hover:text-blue-700">
+            Forgot password?
+          </button>
+        </div>
+
         {error ? (
-          <div className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-center text-sm font-medium text-red-600 dark:border-red-800 dark:bg-red-900/20 dark:text-red-400">
+          <div className="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-center text-sm font-medium text-red-600">
             {error}
           </div>
         ) : null}
@@ -110,17 +126,22 @@ export function LoginPage() {
         <button
           type="submit"
           disabled={isSubmitting}
-          className="mt-6 h-12 w-full rounded-full bg-indigo-600 text-sm font-bold text-white shadow-md transition-all duration-200 hover:-translate-y-0.5 hover:bg-indigo-500 hover:shadow-lg active:scale-95 disabled:cursor-not-allowed disabled:opacity-70 disabled:transform-none dark:bg-indigo-500 dark:text-slate-950 dark:hover:bg-indigo-400"
+          className="h-12 w-full rounded-lg bg-blue-600 text-base font-semibold text-white shadow-sm transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-70"
         >
-          {isSubmitting ? "Signing in..." : "Sign In to Dashboard"}
+          {isSubmitting ? "Signing in..." : "Sign in"}
         </button>
       </form>
 
-      <div className="mt-8 text-center text-sm">
-        <span className="font-medium text-slate-500 dark:text-slate-400">Don't have access?</span>
+      <div className="my-7 flex items-center gap-5 text-sm text-slate-400">
+        <span className="h-px flex-1 bg-slate-200" />
+        or
+        <span className="h-px flex-1 bg-slate-200" />
+      </div>
+
+      <div>
         <Link
           to="/register"
-          className="ml-2 font-bold text-indigo-600 underline-offset-4 hover:underline dark:text-indigo-400"
+          className="flex h-12 w-full items-center justify-center rounded-lg border border-slate-200 bg-white text-base font-semibold text-blue-600 transition hover:border-blue-200 hover:bg-blue-50"
         >
           Create account
         </Link>

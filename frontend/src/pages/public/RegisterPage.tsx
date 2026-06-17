@@ -47,18 +47,18 @@ export function RegisterPage() {
     <AuthShell
       documentTitle="CourseGrid | Register"
       title="Create Account"
-      subtitle="Register to start your learning journey."
+      subtitle="Create your CourseGrid LMS account."
     >
       <form className="space-y-5" onSubmit={handleSubmit}>
-        <div className="space-y-1.5">
+        <div>
           <label
             htmlFor="name"
-            className="ml-4 text-xs font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500"
+            className="text-sm font-bold text-slate-800"
           >
-            Full Name
+            Full name
           </label>
-          <div className="flex h-12 items-center rounded-full border border-slate-200 bg-slate-50/50 px-5 transition-all focus-within:border-indigo-500 focus-within:ring-2 focus-within:ring-indigo-500/50 dark:border-slate-800 dark:bg-slate-900">
-            <UserRound className="h-4 w-4 text-slate-400" aria-hidden="true" />
+          <div className="mt-3 flex h-12 items-center rounded-lg border border-slate-200 bg-white px-4 transition focus-within:border-blue-500 focus-within:ring-4 focus-within:ring-blue-100">
+            <UserRound className="h-5 w-5 text-slate-400" aria-hidden="true" />
             <input
               id="name"
               type="text"
@@ -67,41 +67,41 @@ export function RegisterPage() {
               required
               minLength={2}
               placeholder="John Doe"
-              className="ml-3 min-w-0 flex-1 border-0 bg-transparent text-sm font-medium text-slate-800 outline-none placeholder:text-slate-400 dark:text-white"
+              className="ml-3 min-w-0 flex-1 border-0 bg-transparent text-base font-medium text-slate-900 outline-none placeholder:text-slate-400"
             />
           </div>
         </div>
 
-        <div className="space-y-1.5">
+        <div>
           <label
             htmlFor="email"
-            className="ml-4 text-xs font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500"
+            className="text-sm font-bold text-slate-800"
           >
-            Email Address
+            Email address
           </label>
-          <div className="flex h-12 items-center rounded-full border border-slate-200 bg-slate-50/50 px-5 transition-all focus-within:border-indigo-500 focus-within:ring-2 focus-within:ring-indigo-500/50 dark:border-slate-800 dark:bg-slate-900">
-            <Mail className="h-4 w-4 text-slate-400" aria-hidden="true" />
+          <div className="mt-3 flex h-12 items-center rounded-lg border border-slate-200 bg-white px-4 transition focus-within:border-blue-500 focus-within:ring-4 focus-within:ring-blue-100">
+            <Mail className="h-5 w-5 text-slate-400" aria-hidden="true" />
             <input
               id="email"
               type="email"
               value={email}
               onChange={(event) => setEmail(event.target.value)}
               required
-              placeholder="student@coursegrid.com"
-              className="ml-3 min-w-0 flex-1 border-0 bg-transparent text-sm font-medium text-slate-800 outline-none placeholder:text-slate-400 dark:text-white"
+              placeholder="you@example.com"
+              className="ml-3 min-w-0 flex-1 border-0 bg-transparent text-base font-medium text-slate-900 outline-none placeholder:text-slate-400"
             />
           </div>
         </div>
 
-        <div className="space-y-1.5">
+        <div>
           <label
             htmlFor="password"
-            className="ml-4 text-xs font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500"
+            className="text-sm font-bold text-slate-800"
           >
             Password
           </label>
-          <div className="flex h-12 items-center rounded-full border border-slate-200 bg-slate-50/50 px-5 transition-all focus-within:border-indigo-500 focus-within:ring-2 focus-within:ring-indigo-500/50 dark:border-slate-800 dark:bg-slate-900">
-            <LockKeyhole className="h-4 w-4 text-slate-400" aria-hidden="true" />
+          <div className="mt-3 flex h-12 items-center rounded-lg border border-slate-200 bg-white px-4 transition focus-within:border-blue-500 focus-within:ring-4 focus-within:ring-blue-100">
+            <LockKeyhole className="h-5 w-5 text-slate-400" aria-hidden="true" />
             <input
               id="password"
               type={showPassword ? "text" : "password"}
@@ -110,27 +110,27 @@ export function RegisterPage() {
               required
               minLength={8}
               placeholder="Minimum 8 characters"
-              className="ml-3 min-w-0 flex-1 border-0 bg-transparent text-sm font-medium text-slate-800 outline-none placeholder:text-slate-400 dark:text-white"
+              className="ml-3 min-w-0 flex-1 border-0 bg-transparent text-base font-medium text-slate-900 outline-none placeholder:text-slate-400"
             />
             <button
               type="button"
               onClick={() => setShowPassword((current) => !current)}
-              className="ml-2 rounded-full p-1.5 text-slate-400 transition hover:bg-slate-100 hover:text-slate-600 dark:hover:bg-slate-800 dark:hover:text-slate-200"
+              className="ml-2 rounded-md p-1.5 text-slate-400 transition hover:bg-slate-100 hover:text-slate-600"
               aria-label={showPassword ? "Hide password" : "Show password"}
             >
               {showPassword ? (
-                <EyeOff className="h-4 w-4" aria-hidden="true" />
+                <EyeOff className="h-5 w-5" aria-hidden="true" />
               ) : (
-                <Eye className="h-4 w-4" aria-hidden="true" />
+                <Eye className="h-5 w-5" aria-hidden="true" />
               )}
             </button>
           </div>
         </div>
 
-        <div className="space-y-1.5">
+        <div>
           <label
             htmlFor="role"
-            className="ml-4 text-xs font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500"
+            className="text-sm font-bold text-slate-800"
           >
             System Role
           </label>
@@ -138,7 +138,7 @@ export function RegisterPage() {
             id="role"
             value={role}
             onChange={(event) => setRole(event.target.value as UserRole)}
-            className="h-12 w-full cursor-pointer appearance-none rounded-full border border-slate-200 bg-slate-50/50 px-5 text-sm font-medium text-slate-800 outline-none transition-all focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/50 dark:border-slate-800 dark:bg-slate-900 dark:text-white"
+            className="mt-3 h-12 w-full cursor-pointer rounded-lg border border-slate-200 bg-white px-4 text-base font-medium text-slate-900 outline-none transition focus:border-blue-500 focus:ring-4 focus:ring-blue-100"
           >
             <option value="student">Student</option>
             <option value="instructor">Instructor</option>
@@ -147,13 +147,13 @@ export function RegisterPage() {
         </div>
 
         {error ? (
-          <div className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-center text-sm font-medium text-red-600 dark:border-red-800 dark:bg-red-900/20 dark:text-red-400">
+          <div className="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-center text-sm font-medium text-red-600">
             {error}
           </div>
         ) : null}
 
         {success ? (
-          <div className="rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm font-medium text-emerald-600 dark:border-emerald-800 dark:bg-emerald-900/20 dark:text-emerald-400">
+          <div className="rounded-lg border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm font-medium text-emerald-600">
             <div className="flex items-center justify-center gap-2">
               <CheckCircle2 className="h-4 w-4" aria-hidden="true" />
               {success}
@@ -164,21 +164,24 @@ export function RegisterPage() {
         <button
           type="submit"
           disabled={isSubmitting}
-          className="mt-6 h-12 w-full rounded-full bg-indigo-600 text-sm font-bold text-white shadow-md transition-all duration-200 hover:-translate-y-0.5 hover:bg-indigo-500 hover:shadow-lg active:scale-95 disabled:cursor-not-allowed disabled:opacity-70 disabled:transform-none dark:bg-indigo-500 dark:text-slate-950 dark:hover:bg-indigo-400"
+          className="h-12 w-full rounded-lg bg-blue-600 text-base font-semibold text-white shadow-sm transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-70"
         >
           {isSubmitting ? "Processing..." : "Create account"}
         </button>
       </form>
 
-      <div className="mt-8 text-center text-sm">
-        <span className="font-medium text-slate-500 dark:text-slate-400">
-          Already registered?
-        </span>
+      <div className="my-7 flex items-center gap-5 text-sm text-slate-400">
+        <span className="h-px flex-1 bg-slate-200" />
+        or
+        <span className="h-px flex-1 bg-slate-200" />
+      </div>
+
+      <div>
         <Link
           to="/login"
-          className="ml-2 font-bold text-indigo-600 underline-offset-4 hover:underline dark:text-indigo-400"
+          className="flex h-12 w-full items-center justify-center rounded-lg border border-slate-200 bg-white text-base font-semibold text-blue-600 transition hover:border-blue-200 hover:bg-blue-50"
         >
-          Sign In
+          Sign in
         </Link>
       </div>
     </AuthShell>
