@@ -43,7 +43,6 @@ export function LoginPage() {
   return (
     <AuthShell
       documentTitle="CourseGrid | Login"
-      eyebrow="Secure access"
       title="Welcome Back"
       subtitle="Enter your credentials to access your courses."
     >
@@ -123,7 +122,7 @@ export function LoginPage() {
           to="/register"
           className="ml-2 font-bold text-indigo-600 underline-offset-4 hover:underline dark:text-indigo-400"
         >
-          Request MVP Account
+          Create account
         </Link>
       </div>
     </AuthShell>

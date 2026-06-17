@@ -46,7 +46,6 @@ export function RegisterPage() {
   return (
     <AuthShell
       documentTitle="CourseGrid | Register"
-      eyebrow="MVP account"
       title="Create Account"
       subtitle="Register to start your learning journey."
     >
@@ -167,7 +166,7 @@ export function RegisterPage() {
           disabled={isSubmitting}
           className="mt-6 h-12 w-full rounded-full bg-indigo-600 text-sm font-bold text-white shadow-md transition-all duration-200 hover:-translate-y-0.5 hover:bg-indigo-500 hover:shadow-lg active:scale-95 disabled:cursor-not-allowed disabled:opacity-70 disabled:transform-none dark:bg-indigo-500 dark:text-slate-950 dark:hover:bg-indigo-400"
         >
-          {isSubmitting ? "Processing..." : "Initialize Account"}
+          {isSubmitting ? "Processing..." : "Create account"}
         </button>
       </form>
 

@@ -4,7 +4,7 @@ import { Moon, Sun, UserCircle } from "lucide-react";
 
 type AuthShellProps = {
   children: ReactNode;
-  eyebrow: string;
+  eyebrow?: string;
   title: string;
   subtitle: string;
   documentTitle: string;
@@ -102,9 +102,11 @@ export function AuthShell({ children, documentTitle, eyebrow, subtitle, title }:
               <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-full border border-slate-100 bg-slate-50 text-slate-400 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-500">
                 <UserCircle className="h-8 w-8" />
               </div>
-              <p className="mb-2 text-xs font-bold uppercase tracking-[0.22em] text-indigo-500">
-                {eyebrow}
-              </p>
+              {eyebrow ? (
+                <p className="mb-2 text-xs font-bold uppercase tracking-[0.22em] text-indigo-500">
+                  {eyebrow}
+                </p>
+              ) : null}
               <h2 className="mb-2 text-2xl font-bold text-slate-800 dark:text-white">{title}</h2>
               <p className="text-sm text-slate-500 dark:text-slate-400">{subtitle}</p>
             </div>
