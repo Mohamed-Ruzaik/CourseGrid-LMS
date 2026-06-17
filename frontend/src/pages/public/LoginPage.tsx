@@ -47,7 +47,6 @@ export function LoginPage() {
   const location = useLocation();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [rememberMe, setRememberMe] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -84,26 +83,13 @@ export function LoginPage() {
             <span className="text-lg font-medium text-slate-400">LMS</span>
           </Link>
 
-          <div className="mt-7">
-            <span className="inline-flex rounded-lg bg-indigo-500/10 px-3 py-2 text-sm font-semibold text-[#8074ff]">
-              Learn. Build. Grow.
-            </span>
-            <h1 className="mt-4 max-w-lg text-4xl font-bold leading-tight tracking-tight xl:text-[44px]">
-              Your Learning Journey{" "}
-              <span className="text-[#7466ff]">Starts Here</span>
-            </h1>
-            <p className="mt-3 max-w-md text-base leading-7 text-slate-300">
-              CourseGrid LMS is a modern learning platform designed to help students,
-              instructors, and organizations achieve more together.
-            </p>
-          </div>
         </div>
 
-        <div className="relative z-10 mt-4 flex flex-1 items-center">
+        <div className="relative z-10 flex flex-1 items-center">
           <img
             src="/images/loginpage_image.png"
             alt="CourseGrid learning platform illustration"
-            className="w-full max-w-[430px] object-contain drop-shadow-2xl"
+            className="w-full max-w-[480px] object-contain drop-shadow-2xl"
           />
         </div>
 
@@ -194,24 +180,6 @@ export function LoginPage() {
                 </div>
               </div>
 
-              <div className="flex items-center justify-between gap-4 text-sm">
-                <label className="inline-flex items-center gap-3 font-semibold text-slate-600">
-                  <input
-                    type="checkbox"
-                    checked={rememberMe}
-                    onChange={(event) => setRememberMe(event.target.checked)}
-                    className="h-4 w-4 rounded border-slate-300 text-[#6558f5] focus:ring-[#6558f5]"
-                  />
-                  Remember me
-                </label>
-                <button
-                  type="button"
-                  className="font-semibold text-[#6558f5] hover:text-[#574de0]"
-                >
-                  Forgot password?
-                </button>
-              </div>
-
               {error ? (
                 <div className="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm font-medium text-red-700">
                   {error}
@@ -224,20 +192,6 @@ export function LoginPage() {
                 className="h-[50px] w-full rounded-lg bg-gradient-to-r from-[#6548e8] to-[#5b5cf5] text-sm font-bold text-white shadow-lg shadow-indigo-200 transition hover:from-[#5b40dd] hover:to-[#5153e8] disabled:cursor-not-allowed disabled:opacity-70"
               >
                 {isSubmitting ? "Signing in..." : "Sign in"}
-              </button>
-
-              <div className="flex items-center gap-5 text-sm font-medium text-slate-400">
-                <span className="h-px flex-1 bg-slate-200" />
-                or
-                <span className="h-px flex-1 bg-slate-200" />
-              </div>
-
-              <button
-                type="button"
-                className="flex h-[50px] w-full items-center justify-center gap-3 rounded-lg border border-slate-200 bg-white px-4 py-4 text-sm font-bold text-slate-800 shadow-sm hover:bg-slate-50"
-              >
-                <span className="text-lg font-black text-[#4285f4]">G</span>
-                Sign in with Google
               </button>
 
               <p className="text-center text-sm font-semibold text-slate-500">
