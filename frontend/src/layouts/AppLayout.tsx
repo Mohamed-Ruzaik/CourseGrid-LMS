@@ -1,4 +1,4 @@
-import { NavLink, Outlet } from "react-router-dom";
+import { NavLink, Outlet, useLocation } from "react-router-dom";
 import { useAuth } from "../auth/AuthContext";
 import type { UserRole } from "../types/auth";
 import type { NavItem } from "../types/navigation";
@@ -26,7 +26,13 @@ const navItems: AppNavItem[] = [
 
 export function AppLayout() {
   const { user, logout } = useAuth();
+  const location = useLocation();
   const isAuthenticated = Boolean(user);
+  const isAuthRoute = location.pathname === "/login" || location.pathname === "/register";
+
+  if (isAuthRoute) {
+    return <Outlet />;
+  }
 
   return (
     <div className="min-h-screen bg-slate-50 text-slate-900">
