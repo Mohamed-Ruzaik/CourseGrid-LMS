@@ -20,8 +20,7 @@ const navItems: AppNavItem[] = [
   { label: "Student Dashboard", path: "/student/dashboard", roles: ["student"] },
   { label: "Student Courses", path: "/student/courses", roles: ["student"] },
   { label: "Student Assignments", path: "/student/assignments", roles: ["student"] },
-  { label: "Student Grades", path: "/student/grades", roles: ["student"] },
-  { label: "System Health", path: "/system-health" }
+  { label: "Student Grades", path: "/student/grades", roles: ["student"] }
 ];
 
 export function AppLayout() {
