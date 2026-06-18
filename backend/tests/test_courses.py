@@ -60,6 +60,8 @@ def test_course_crud_and_student_enrollment_flow() -> None:
 
     instructor_response = client.get("/auth/me", headers=auth_headers(instructor_token))
     instructor_id = instructor_response.json()["id"]
+    other_instructor_response = client.get("/auth/me", headers=auth_headers(other_instructor_token))
+    other_instructor_id = other_instructor_response.json()["id"]
 
     create_response = client.post(
         "/courses",
@@ -85,6 +87,28 @@ def test_course_crud_and_student_enrollment_flow() -> None:
         json={"title": "Should Not Work"},
     )
     assert blocked_update.status_code == 403
+
+    shared_course_response = client.post(
+        "/courses",
+        headers=auth_headers(admin_token),
+        json={
+            "title": "Shared Instructor Course",
+            "description": "A course managed by multiple instructors.",
+            "status": "draft",
+            "instructor_ids": [instructor_id, other_instructor_id],
+        },
+    )
+    assert shared_course_response.status_code == 201
+    shared_course = shared_course_response.json()
+    assert shared_course["instructor_id"] == instructor_id
+    assert shared_course["instructor_ids"] == [instructor_id, other_instructor_id]
+
+    shared_update = client.put(
+        f"/courses/{shared_course['id']}",
+        headers=auth_headers(other_instructor_token),
+        json={"description": "Updated by the second instructor."},
+    )
+    assert shared_update.status_code == 200
 
     student_detail_before_enrollment = client.get(
         f"/courses/{course['id']}", headers=auth_headers(student_token)

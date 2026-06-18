@@ -13,6 +13,7 @@ class CourseBase(BaseModel):
 
 class CourseCreate(CourseBase):
     instructor_id: int | None = None
+    instructor_ids: list[int] = Field(default_factory=list)
 
 
 class CourseUpdate(BaseModel):
@@ -20,6 +21,7 @@ class CourseUpdate(BaseModel):
     description: str | None = Field(default=None, max_length=4000)
     status: CourseStatus | None = None
     instructor_id: int | None = None
+    instructor_ids: list[int] | None = None
 
 
 class CourseRead(BaseModel):
@@ -28,6 +30,7 @@ class CourseRead(BaseModel):
     description: str
     status: CourseStatus
     instructor_id: int
+    instructor_ids: list[int] = Field(default_factory=list)
     created_at: datetime
     updated_at: datetime
     is_enrolled: bool = False

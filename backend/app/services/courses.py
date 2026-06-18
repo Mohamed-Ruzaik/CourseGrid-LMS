@@ -81,10 +81,32 @@ def user_is_course_instructor(db: Session, course_id: int, instructor_id: int) -
     )
 
 
+def get_course_instructor_ids(db: Session, course: Course) -> list[int]:
+    assigned_ids = list(
+        db.scalars(
+            select(CourseInstructor.instructor_id)
+            .where(CourseInstructor.course_id == course.id)
+            .order_by(CourseInstructor.instructor_id)
+        )
+    )
+    return list(dict.fromkeys([course.instructor_id, *assigned_ids]))
+
+
+def _sync_course_instructors(db: Session, course: Course, instructor_ids: list[int]) -> None:
+    unique_ids = list(dict.fromkeys(instructor_ids))
+    db.execute(delete(CourseInstructor).where(CourseInstructor.course_id == course.id))
+    for instructor_id in unique_ids:
+        db.add(CourseInstructor(course_id=course.id, instructor_id=instructor_id))
+
+
 def create_course(db: Session, course_data: CourseCreate, current_user: User) -> Course:
+    selected_instructor_ids = course_data.instructor_ids
+    if current_user.role == UserRole.admin and course_data.instructor_id is not None:
+        selected_instructor_ids = [course_data.instructor_id, *selected_instructor_ids]
+
     instructor_id = (
-        course_data.instructor_id
-        if current_user.role == UserRole.admin and course_data.instructor_id is not None
+        selected_instructor_ids[0]
+        if current_user.role == UserRole.admin and selected_instructor_ids
         else current_user.id
     )
     course = Course(
@@ -95,7 +117,7 @@ def create_course(db: Session, course_data: CourseCreate, current_user: User) ->
     )
     db.add(course)
     db.flush()
-    db.add(CourseInstructor(course_id=course.id, instructor_id=instructor_id))
+    _sync_course_instructors(db, course, [instructor_id, *selected_instructor_ids])
     db.commit()
     db.refresh(course)
     return course
@@ -128,6 +150,15 @@ def update_course(db: Session, course: Course, course_data: CourseUpdate, curren
                     instructor_id=updates["instructor_id"],
                 )
             )
+    if (
+        "instructor_ids" in updates
+        and updates["instructor_ids"] is not None
+        and current_user.role == UserRole.admin
+    ):
+        instructor_ids = list(dict.fromkeys(updates["instructor_ids"]))
+        if instructor_ids:
+            course.instructor_id = instructor_ids[0]
+        _sync_course_instructors(db, course, instructor_ids or [course.instructor_id])
 
     db.add(course)
     db.commit()

@@ -6,6 +6,7 @@ export type Course = {
   description: string;
   status: CourseStatus;
   instructor_id: number;
+  instructor_ids: number[];
   created_at: string;
   updated_at: string;
   is_enrolled: boolean;
@@ -16,6 +17,7 @@ export type CoursePayload = {
   description: string;
   status: CourseStatus;
   instructor_id?: number;
+  instructor_ids?: number[];
 };
 
 export type Enrollment = {

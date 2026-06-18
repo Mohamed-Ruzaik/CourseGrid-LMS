@@ -113,7 +113,7 @@ export function LessonForm({ lesson, moduleId, isSubmitting, onSubmit, onCancel 
         value={content}
         onChange={(event) => setContent(event.target.value)}
         rows={3}
-        placeholder="Lesson content"
+        placeholder="Lecture notes, slide deck link, or lesson content"
         className="w-full rounded-md border border-slate-300 px-3 py-2 text-sm outline-none focus:border-brand-500 focus:ring-2 focus:ring-brand-100"
       />
       <div className="flex gap-2">

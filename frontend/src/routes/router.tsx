@@ -2,6 +2,7 @@ import { Navigate, createBrowserRouter } from "react-router-dom";
 import { ProtectedRoute } from "../auth/ProtectedRoute";
 import { AppLayout } from "../layouts/AppLayout";
 import { AdminCoursesPage } from "../pages/admin/AdminCoursesPage";
+import { AdminCourseCreatePage } from "../pages/admin/AdminCourseCreatePage";
 import { AdminDashboardPage } from "../pages/admin/AdminDashboardPage";
 import { AdminUsersPage } from "../pages/admin/AdminUsersPage";
 import { InstructorAssignmentsPage } from "../pages/instructor/InstructorAssignmentsPage";
@@ -33,7 +34,9 @@ export const router = createBrowserRouter([
         children: [
           { path: "admin/dashboard", element: <AdminDashboardPage /> },
           { path: "admin/users", element: <AdminUsersPage /> },
-          { path: "admin/courses", element: <AdminCoursesPage /> }
+          { path: "admin/courses", element: <AdminCoursesPage /> },
+          { path: "admin/courses/create", element: <AdminCourseCreatePage /> },
+          { path: "admin/courses/:id/builder", element: <InstructorCourseBuilderPage /> }
         ]
       },
       {

@@ -1,5 +1,5 @@
-import { useCallback, useEffect, useState } from "react";
-import { useParams } from "react-router-dom";
+import { FormEvent, useCallback, useEffect, useState } from "react";
+import { Link, useParams } from "react-router-dom";
 import {
   createLesson,
   createModule,
@@ -9,6 +9,8 @@ import {
   updateLesson,
   updateModule
 } from "../../api/content";
+import { createAssignment } from "../../api/assignments";
+import { useAuth } from "../../auth/AuthContext";
 import { fetchCourse } from "../../api/courses";
 import { LessonForm, ModuleForm } from "../../components/ContentForms";
 import { MessageBox } from "../../components/MessageBox";
@@ -19,6 +21,7 @@ import { getApiErrorMessage } from "../../utils/errorMessage";
 
 export function InstructorCourseBuilderPage() {
   const { id } = useParams();
+  const { user } = useAuth();
   const [course, setCourse] = useState<Course | null>(null);
   const [modules, setModules] = useState<ModuleWithLessons[]>([]);
   const [editingModule, setEditingModule] = useState<CourseModule | null>(null);
@@ -27,6 +30,7 @@ export function InstructorCourseBuilderPage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
+  const doneHref = user?.role === "admin" ? "/admin/courses" : "/instructor/courses";
 
   const loadBuilder = useCallback(async () => {
     if (!id) {
@@ -121,6 +125,31 @@ export function InstructorCourseBuilderPage() {
     }
   }
 
+  async function handleAssignmentSubmit(
+    module: ModuleWithLessons,
+    payload: { title: string; description: string; max_points: number }
+  ) {
+    if (!id) {
+      return;
+    }
+    setIsSubmitting(true);
+    setError("");
+    setSuccess("");
+    try {
+      await createAssignment(id, {
+        title: payload.title,
+        description: `Module ${module.position}: ${module.title}\n\n${payload.description}`.trim(),
+        due_date: null,
+        max_points: payload.max_points
+      });
+      setSuccess("Assignment created.");
+    } catch (submitError) {
+      setError(getApiErrorMessage(submitError, "Could not create assignment."));
+    } finally {
+      setIsSubmitting(false);
+    }
+  }
+
   return (
     <>
       <PageHeader
@@ -130,6 +159,20 @@ export function InstructorCourseBuilderPage() {
       <div className="space-y-5 p-6">
         {error ? <MessageBox tone="error">{error}</MessageBox> : null}
         {success ? <MessageBox tone="success">{success}</MessageBox> : null}
+        <div className="flex flex-col gap-3 rounded-xl border border-slate-200 bg-white p-5 shadow-sm md:flex-row md:items-center md:justify-between">
+          <div>
+            <h2 className="text-lg font-bold text-slate-950">Module editing</h2>
+            <p className="mt-1 text-sm text-slate-600">
+              Add module titles, lesson content or slide references, and optional assignments for each module.
+            </p>
+          </div>
+          <Link
+            to={doneHref}
+            className="inline-flex items-center justify-center rounded-xl bg-blue-600 px-5 py-3 text-sm font-semibold text-white hover:bg-blue-700"
+          >
+            Done
+          </Link>
+        </div>
         <ModuleForm
           module={editingModule}
           isSubmitting={isSubmitting}
@@ -212,11 +255,88 @@ export function InstructorCourseBuilderPage() {
                   onSubmit={handleLessonSubmit}
                   onCancel={editingLesson?.module_id === module.id ? () => setEditingLesson(null) : undefined}
                 />
+                <AssignmentQuickForm
+                  module={module}
+                  isSubmitting={isSubmitting}
+                  onSubmit={handleAssignmentSubmit}
+                />
               </div>
             </section>
           ))}
         </div>
       </div>
     </>
+  );
+}
+
+type AssignmentQuickFormProps = {
+  module: ModuleWithLessons;
+  isSubmitting: boolean;
+  onSubmit: (
+    module: ModuleWithLessons,
+    payload: { title: string; description: string; max_points: number }
+  ) => Promise<void>;
+};
+
+function AssignmentQuickForm({ module, isSubmitting, onSubmit }: AssignmentQuickFormProps) {
+  const [title, setTitle] = useState("");
+  const [description, setDescription] = useState("");
+  const [maxPoints, setMaxPoints] = useState("100");
+
+  async function handleSubmit(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    await onSubmit(module, {
+      title,
+      description,
+      max_points: Number(maxPoints)
+    });
+    setTitle("");
+    setDescription("");
+    setMaxPoints("100");
+  }
+
+  return (
+    <form onSubmit={handleSubmit} className="space-y-3 rounded-md border border-blue-100 bg-blue-50/60 p-4">
+      <div>
+        <h3 className="text-sm font-bold text-slate-950">Create assignment for this module</h3>
+        <p className="mt-1 text-xs text-slate-600">
+          Assignments are stored at course level and tagged in the description with this module name.
+        </p>
+      </div>
+      <div className="grid gap-3 md:grid-cols-[1fr_120px]">
+        <input
+          aria-label={`Assignment title for ${module.title}`}
+          value={title}
+          onChange={(event) => setTitle(event.target.value)}
+          required
+          minLength={3}
+          placeholder="Assignment title"
+          className="rounded-md border border-slate-300 px-3 py-2 text-sm outline-none focus:border-brand-500 focus:ring-2 focus:ring-brand-100"
+        />
+        <input
+          aria-label={`Assignment points for ${module.title}`}
+          type="number"
+          min={1}
+          value={maxPoints}
+          onChange={(event) => setMaxPoints(event.target.value)}
+          className="rounded-md border border-slate-300 px-3 py-2 text-sm outline-none focus:border-brand-500 focus:ring-2 focus:ring-brand-100"
+        />
+      </div>
+      <textarea
+        aria-label={`Assignment description for ${module.title}`}
+        value={description}
+        onChange={(event) => setDescription(event.target.value)}
+        rows={2}
+        placeholder="Assignment instructions"
+        className="w-full rounded-md border border-slate-300 px-3 py-2 text-sm outline-none focus:border-brand-500 focus:ring-2 focus:ring-brand-100"
+      />
+      <button
+        type="submit"
+        disabled={isSubmitting}
+        className="rounded-md bg-brand-600 px-4 py-2 text-sm font-semibold text-white hover:bg-brand-700 disabled:opacity-70"
+      >
+        {isSubmitting ? "Saving..." : "Create assignment"}
+      </button>
+    </form>
   );
 }

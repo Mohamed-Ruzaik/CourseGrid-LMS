@@ -10,6 +10,7 @@ from app.services.courses import (
     delete_course,
     enroll_student,
     get_course,
+    get_course_instructor_ids,
     get_enrolled_course_ids,
     list_courses_for_user,
     update_course,
@@ -26,6 +27,14 @@ def serialize_course(course: Course, enrolled_ids: set[int] | None = None) -> Co
     return course_read
 
 
+def serialize_course_with_instructors(
+    db: Session, course: Course, enrolled_ids: set[int] | None = None
+) -> CourseRead:
+    course_read = serialize_course(course, enrolled_ids)
+    course_read.instructor_ids = get_course_instructor_ids(db, course)
+    return course_read
+
+
 @router.get("", response_model=list[CourseRead])
 def list_courses(
     enrolled: bool = Query(default=False),
@@ -38,7 +47,7 @@ def list_courses(
         if current_user.role == UserRole.student
         else set()
     )
-    return [serialize_course(course, enrolled_ids) for course in courses]
+    return [serialize_course_with_instructors(db, course, enrolled_ids) for course in courses]
 
 
 @router.post("", response_model=CourseRead, status_code=status.HTTP_201_CREATED)
@@ -48,7 +57,7 @@ def create_course_route(
     current_user: User = Depends(require_admin_or_instructor),
 ) -> CourseRead:
     course = create_course(db, course_data, current_user)
-    return serialize_course(course)
+    return serialize_course_with_instructors(db, course)
 
 
 @router.get("/{course_id}", response_model=CourseRead)
@@ -70,7 +79,7 @@ def get_course_route(
         if current_user.role == UserRole.student
         else set()
     )
-    return serialize_course(course, enrolled_ids)
+    return serialize_course_with_instructors(db, course, enrolled_ids)
 
 
 @router.put("/{course_id}", response_model=CourseRead)
@@ -86,7 +95,7 @@ def update_course_route(
     if current_user.role == UserRole.instructor and not user_is_course_instructor(db, course.id, current_user.id):
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Course access denied")
 
-    return serialize_course(update_course(db, course, course_data, current_user))
+    return serialize_course_with_instructors(db, update_course(db, course, course_data, current_user))
 
 
 @router.delete("/{course_id}", status_code=status.HTTP_204_NO_CONTENT)
