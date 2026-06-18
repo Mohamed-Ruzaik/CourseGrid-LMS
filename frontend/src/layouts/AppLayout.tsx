@@ -30,7 +30,6 @@ const navItems: AppNavItem[] = [
   { label: "Courses", path: "/admin/courses", roles: ["admin"], icon: BookOpen },
   { label: "Dashboard", path: "/instructor/dashboard", roles: ["instructor"], icon: LayoutDashboard },
   { label: "My Courses", path: "/instructor/courses", roles: ["instructor"], icon: BookOpen },
-  { label: "Assignments", path: "/instructor/assignments", roles: ["instructor"], icon: ClipboardList },
   { label: "Submissions", path: "/instructor/submissions", roles: ["instructor"], icon: GraduationCap },
   { label: "Dashboard", path: "/student/dashboard", roles: ["student"], icon: LayoutDashboard },
   { label: "My Courses", path: "/student/courses", roles: ["student"], icon: BookOpen },

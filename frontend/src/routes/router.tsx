@@ -7,6 +7,7 @@ import { AdminDashboardPage } from "../pages/admin/AdminDashboardPage";
 import { AdminUserCreatePage, AdminUserEditPage } from "../pages/admin/AdminUserFormPages";
 import { AdminUsersPage } from "../pages/admin/AdminUsersPage";
 import { InstructorAssignmentsPage } from "../pages/instructor/InstructorAssignmentsPage";
+import { InstructorCourseCreatePage } from "../pages/instructor/InstructorCourseCreatePage";
 import { InstructorCourseBuilderPage } from "../pages/instructor/InstructorCourseBuilderPage";
 import { InstructorCourseDetailPage } from "../pages/instructor/InstructorCourseDetailPage";
 import { InstructorCoursesPage } from "../pages/instructor/InstructorCoursesPage";
@@ -47,6 +48,7 @@ export const router = createBrowserRouter([
         children: [
           { path: "instructor/dashboard", element: <InstructorDashboardPage /> },
           { path: "instructor/courses", element: <InstructorCoursesPage /> },
+          { path: "instructor/courses/create", element: <InstructorCourseCreatePage /> },
           { path: "instructor/courses/:id", element: <InstructorCourseDetailPage /> },
           { path: "instructor/courses/:id/builder", element: <InstructorCourseBuilderPage /> },
           { path: "instructor/assignments", element: <InstructorAssignmentsPage /> },
