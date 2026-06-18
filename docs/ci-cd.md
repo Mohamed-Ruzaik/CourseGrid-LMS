@@ -4,43 +4,70 @@ CourseGrid LMS includes a simple GitHub Actions workflow at `.github/workflows/c
 
 ## CI Goals
 
-The workflow proves that the project can be installed, tested, built, and containerized in a clean environment.
+The workflow proves that the project can be installed, tested, built, and containerized in a clean environment. It is intentionally modest and matches the project scope as an internship-ready MVP.
 
-## Workflow Jobs
+## Current Workflow
+
+The workflow runs on:
+
+- Pushes to `main`
+- Pull requests targeting `main`
+
+## Jobs
 
 ### Frontend Build
 
 - Checkout repository
 - Setup Node.js 22
+- Use npm cache with `frontend/package-lock.json`
 - Run `npm ci`
 - Run `npm run build`
+
+This validates the React/TypeScript/Vite frontend build.
 
 ### Backend Tests
 
 - Checkout repository
 - Setup Python 3.12
 - Install `backend/requirements.txt`
-- Run `pytest -q`
+- Run `pytest -q` with `PYTHONPATH=.`
+
+Current backend tests use SQLite with SQLAlchemy `StaticPool`, not PostgreSQL.
 
 ### Docker Build Validation
 
-- Build backend Docker image
-- Build frontend production Docker image
+- Waits for frontend and backend jobs
+- Builds backend Docker image from `./backend`
+- Builds frontend production Docker image using `--target production`
+
+This validates that both Dockerfiles can build in CI. The images are not pushed to a registry and are not run as containers in the workflow.
+
+## Current Limitations
+
+- No deployment job
+- No Docker image push to ECR or another registry
+- No linting or formatting checks
+- No frontend unit tests
+- No Playwright/browser tests
+- No PostgreSQL integration test service
+- Docker images are built but not run in CI
 
 ## Why This Is Enough For V1
 
-This project is an internship-ready MVP. The CI workflow focuses on the checks that matter most for a portfolio review:
+This project is an internship-ready MVP. The CI workflow focuses on checks that matter for a first portfolio review:
 
 - TypeScript frontend compiles
 - Backend tests execute
 - Dockerfiles build successfully
-- The repo can be validated without local machine assumptions
+- The repository can be validated without local machine assumptions
 
 ## Future Improvements
 
-- Add linting and formatting checks
-- Add frontend unit tests
-- Add Playwright smoke tests for login and dashboards
+- Add backend linting and formatting checks
+- Add frontend linting and component tests
+- Add Playwright smoke tests for login and role dashboards
+- Add PostgreSQL service container for integration tests
+- Run Docker containers in CI and call `/health` and `/ready`
 - Publish Docker images to Amazon ECR on tagged releases
 - Add deployment jobs after AWS infrastructure is chosen
 
