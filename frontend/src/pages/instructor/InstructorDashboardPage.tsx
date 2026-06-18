@@ -9,7 +9,7 @@ import type { AnalyticsSummary } from "../../types/analytics";
 import { getApiErrorMessage } from "../../utils/errorMessage";
 
 export function InstructorDashboardPage() {
-  const { user } = useAuth();
+  const { user, refreshCurrentUser } = useAuth();
   const [summary, setSummary] = useState<AnalyticsSummary | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState("");
@@ -18,13 +18,17 @@ export function InstructorDashboardPage() {
     setIsLoading(true);
     setError("");
     try {
-      setSummary(await fetchAnalyticsSummary());
+      const [, summaryData] = await Promise.all([
+        refreshCurrentUser(),
+        fetchAnalyticsSummary()
+      ]);
+      setSummary(summaryData);
     } catch (loadError) {
       setError(getApiErrorMessage(loadError, "Could not load instructor summary."));
     } finally {
       setIsLoading(false);
     }
-  }, []);
+  }, [refreshCurrentUser]);
 
   useEffect(() => {
     void loadSummary();
@@ -39,7 +43,7 @@ export function InstructorDashboardPage() {
       <section className="space-y-7">
         <div>
           <h1 className="text-3xl font-bold tracking-tight text-slate-950">
-            Good morning, {user?.name?.split(" ")[0] ?? "Instructor"}!
+            Good morning, {user?.name?.trim() || "Instructor"}!
           </h1>
           <p className="mt-2 text-lg text-slate-600">Review your teaching workspace and grading queue.</p>
         </div>

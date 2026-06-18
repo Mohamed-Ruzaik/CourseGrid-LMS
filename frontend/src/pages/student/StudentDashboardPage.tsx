@@ -26,7 +26,7 @@ function findActiveModule(modules: ModuleWithLessons[]) {
 }
 
 export function StudentDashboardPage() {
-  const { user } = useAuth();
+  const { user, refreshCurrentUser } = useAuth();
   const [courses, setCourses] = useState<Course[]>([]);
   const [summary, setSummary] = useState<AnalyticsSummary | null>(null);
   const [continueTarget, setContinueTarget] = useState<ContinueTarget | null>(null);
@@ -37,7 +37,8 @@ export function StudentDashboardPage() {
     setIsLoading(true);
     setError("");
     try {
-      const [courseData, summaryData] = await Promise.all([
+      const [, courseData, summaryData] = await Promise.all([
+        refreshCurrentUser(),
         fetchCourses({ enrolled: true }),
         fetchAnalyticsSummary()
       ]);
@@ -64,7 +65,7 @@ export function StudentDashboardPage() {
     } finally {
       setIsLoading(false);
     }
-  }, []);
+  }, [refreshCurrentUser]);
 
   useEffect(() => {
     void loadDashboard();
@@ -75,7 +76,7 @@ export function StudentDashboardPage() {
       <section className="space-y-6">
         <div>
           <h1 className="text-3xl font-bold tracking-tight text-slate-950">
-            Good morning, {user?.name?.split(" ")[0] ?? "Student"}!
+            Good morning, {user?.name?.trim() || "Student"}!
           </h1>
           <p className="mt-2 text-base text-slate-600">Let's continue your learning journey.</p>
         </div>
