@@ -4,7 +4,7 @@ CourseGrid LMS is a Dockerized full-stack Learning Management System prototype b
 
 ## Current Status
 
-CourseGrid LMS currently runs as a local development stack with a React frontend, FastAPI backend, and PostgreSQL database through Docker Compose. The app includes authentication, role-based dashboards, course/content workflows, assignment submission and grading, account approval flows, seed/demo data, health endpoints, and a simple GitHub Actions CI workflow.
+CourseGrid LMS currently runs as a local development stack with a React frontend, FastAPI backend, and PostgreSQL database through Docker Compose. The app includes authentication, role-based dashboards, course/content workflows, assignment submission and grading, account approval flows, seed/demo data, health endpoints, a GitHub Actions CI workflow, and a GHCR Docker image publishing workflow.
 
 This is not a production deployment yet. The project is positioned as a DevOps-aligned internship portfolio project that demonstrates full-stack implementation, containerization, CI awareness, and cloud deployment planning.
 
@@ -61,6 +61,7 @@ Implemented today:
 - Auth, roles, approvals, courses, enrollments, modules, lessons, assignments, submissions, grading, announcements, settings, analytics, and health checks
 - Demo seed script with active demo users and sample LMS data
 - GitHub Actions workflow for frontend build, backend tests, and Docker build validation
+- GitHub Actions workflow that can publish backend and frontend Docker images to GitHub Container Registry
 
 Planned later:
 
@@ -68,7 +69,7 @@ Planned later:
 - Production backend command instead of development `--reload`
 - PostgreSQL integration tests in CI
 - Linting, formatting, frontend tests, and Playwright smoke tests
-- Docker image publishing and deployment pipeline
+- Production deployment pipeline
 - Refresh tokens and stronger production auth hardening
 - Optional file upload support if needed after the MVP is stable
 
@@ -180,9 +181,12 @@ Core API groups:
 - PostgreSQL and backend health checks
 - Demo seed script for reviewer data
 - GitHub Actions workflow for frontend build, backend pytest, and Docker build validation
+- Docker publish workflow for GHCR images:
+  - `ghcr.io/mohamed-ruzaik/coursegrid-backend:latest`
+  - `ghcr.io/mohamed-ruzaik/coursegrid-frontend:latest`
 - AWS deployment plan documented without adding Kubernetes or Terraform implementation
 
-Limitations are intentional and documented: the Compose stack is development-mode, backend tests currently use SQLite, deployment is planned but not automated, and production migrations are not implemented yet.
+Limitations are intentional and documented: the Compose stack is development-mode, backend tests currently use SQLite, Docker images can be published to GHCR, no production deployment pipeline exists yet, and production migrations are not implemented yet.
 
 ## Deployment Notes
 
@@ -198,13 +202,16 @@ The recommended production path is:
 
 See [docs/aws-deployment-plan.md](docs/aws-deployment-plan.md) for details.
 
+The GitHub Actions Docker publish workflow can publish images to GitHub Container Registry, but it does not deploy the application. AWS deployment remains a documented future path.
+
 ## Folder Structure
 
 ```txt
 coursegrid-lms/
 ├── .github/
 │   └── workflows/
-│       └── ci.yml
+│       ├── ci.yml
+│       └── docker-publish.yml
 ├── backend/
 │   ├── app/
 │   │   ├── api/
