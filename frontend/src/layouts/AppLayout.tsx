@@ -7,8 +7,7 @@ import {
   GraduationCap,
   LayoutDashboard,
   LogOut,
-  PanelLeftClose,
-  PanelLeftOpen,
+  Pin,
   Settings,
   UsersRound
 } from "lucide-react";
@@ -123,28 +122,19 @@ export function AppLayout() {
             <button
               type="button"
               onClick={() => setIsSidebarPinned((current) => !current)}
-              className="grid h-9 w-9 shrink-0 place-items-center rounded-lg text-slate-300 transition hover:bg-white/10 hover:text-white"
+              className={[
+                "grid h-9 w-9 shrink-0 place-items-center rounded-lg transition hover:bg-white/10 hover:text-white",
+                isSidebarPinned ? "bg-white/10 text-blue-200" : "text-slate-300"
+              ].join(" ")}
               aria-label={isSidebarPinned ? "Unpin sidebar" : "Pin sidebar"}
               title={isSidebarPinned ? "Unpin sidebar" : "Pin sidebar"}
             >
-              {isSidebarPinned ? (
-                <PanelLeftClose className="h-5 w-5" aria-hidden="true" />
-              ) : (
-                <PanelLeftOpen className="h-5 w-5" aria-hidden="true" />
-              )}
+              <Pin className="h-5 w-5" aria-hidden="true" />
             </button>
           ) : null}
         </div>
 
         <nav className={["flex-1 space-y-3 py-7", isSidebarCollapsed ? "px-3" : "px-4"].join(" ")}>
-          {isSidebarCollapsed ? (
-            <div
-              className="mb-4 grid h-12 w-full place-items-center rounded-xl text-slate-400"
-              aria-hidden="true"
-            >
-              <PanelLeftOpen className="h-5 w-5" />
-            </div>
-          ) : null}
           {visibleNavItems.map((item) => {
             const Icon = item.icon ?? LayoutDashboard;
             return (
