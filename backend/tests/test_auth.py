@@ -8,6 +8,7 @@ from sqlalchemy.pool import StaticPool
 from app.api.deps import db_session
 from app.db.base import Base
 from app.main import app
+from app.models.user import User
 
 engine = create_engine(
     "sqlite://",
@@ -48,6 +49,24 @@ def test_register_login_and_me_flow() -> None:
 
     duplicate_response = client.post("/auth/register", json=payload)
     assert duplicate_response.status_code == 409
+
+    login_response = client.post(
+        "/auth/login",
+        json={"email": payload["email"], "password": payload["password"]},
+    )
+
+    assert login_response.status_code == 403
+
+    db_generator = app.dependency_overrides[db_session]()
+    db = next(db_generator)
+    try:
+        user = db.get(User, register_data["id"])
+        assert user is not None
+        user.is_active = True
+        db.add(user)
+        db.commit()
+    finally:
+        db.close()
 
     login_response = client.post(
         "/auth/login",

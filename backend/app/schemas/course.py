@@ -34,6 +34,7 @@ class CourseRead(BaseModel):
     created_at: datetime
     updated_at: datetime
     is_enrolled: bool = False
+    instructor_request_status: str | None = None
 
     model_config = {"from_attributes": True}
 
@@ -43,5 +44,16 @@ class EnrollmentRead(BaseModel):
     user_id: int
     course_id: int
     enrolled_at: datetime
+
+    model_config = {"from_attributes": True}
+
+
+class InstructorCourseRequestRead(BaseModel):
+    id: int
+    course_id: int
+    instructor_id: int
+    status: str
+    requested_at: datetime
+    reviewed_at: datetime | None
 
     model_config = {"from_attributes": True}

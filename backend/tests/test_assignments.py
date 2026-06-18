@@ -1,13 +1,14 @@
 from collections.abc import Generator
 
 from fastapi.testclient import TestClient
-from sqlalchemy import create_engine
+from sqlalchemy import create_engine, select
 from sqlalchemy.orm import Session, sessionmaker
 from sqlalchemy.pool import StaticPool
 
 from app.api.deps import db_session
 from app.db.base import Base
 from app.main import app
+from app.models.user import User
 
 engine = create_engine(
     "sqlite://",
@@ -40,6 +41,16 @@ def create_account(email: str, role: str) -> tuple[str, int]:
             "role": role,
         },
     )
+    db_generator = app.dependency_overrides[db_session]()
+    db = next(db_generator)
+    try:
+        user = db.scalar(select(User).where(User.email == email))
+        assert user is not None
+        user.is_active = True
+        db.add(user)
+        db.commit()
+    finally:
+        db.close()
     response = client.post(
         "/auth/login",
         json={"email": email, "password": "password123"},

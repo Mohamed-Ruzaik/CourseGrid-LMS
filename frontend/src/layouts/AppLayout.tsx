@@ -8,6 +8,7 @@ import {
   LayoutDashboard,
   LogOut,
   Pin,
+  ShieldCheck,
   Settings,
   UsersRound
 } from "lucide-react";
@@ -26,6 +27,7 @@ const navItems: AppNavItem[] = [
   { label: "Register", path: "/register" },
   { label: "Dashboard", path: "/admin/dashboard", roles: ["admin"], icon: LayoutDashboard },
   { label: "Users", path: "/admin/users", roles: ["admin"], icon: UsersRound },
+  { label: "Approvals", path: "/admin/approvals", roles: ["admin"], icon: ShieldCheck },
   { label: "Courses", path: "/admin/courses", roles: ["admin"], icon: BookOpen },
   { label: "Dashboard", path: "/instructor/dashboard", roles: ["instructor"], icon: LayoutDashboard },
   { label: "My Courses", path: "/instructor/courses", roles: ["instructor"], icon: BookOpen },

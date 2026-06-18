@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import { Plus, Search, UserCog } from "lucide-react";
+import { approveUser, suspendUser } from "../../api/approvals";
 import { fetchAdminUsers } from "../../api/users";
 import { MessageBox } from "../../components/MessageBox";
 import { PageHeader } from "../../components/PageHeader";
@@ -16,7 +17,9 @@ export function AdminUsersPage() {
   const [users, setUsers] = useState<AdminUser[]>([]);
   const [query, setQuery] = useState("");
   const [isLoading, setIsLoading] = useState(true);
+  const [workingId, setWorkingId] = useState<number | null>(null);
   const [error, setError] = useState("");
+  const [success, setSuccess] = useState("");
 
   const loadUsers = useCallback(async () => {
     setIsLoading(true);
@@ -33,6 +36,26 @@ export function AdminUsersPage() {
   useEffect(() => {
     void loadUsers();
   }, [loadUsers]);
+
+  async function handleStatusToggle(user: AdminUser) {
+    setWorkingId(user.id);
+    setError("");
+    setSuccess("");
+    try {
+      if (user.is_active) {
+        await suspendUser(user.id);
+        setSuccess(`${user.name} suspended.`);
+      } else {
+        await approveUser(user.id);
+        setSuccess(`${user.name} activated.`);
+      }
+      await loadUsers();
+    } catch (statusError) {
+      setError(getApiErrorMessage(statusError, "Could not update user status."));
+    } finally {
+      setWorkingId(null);
+    }
+  }
 
   const filteredUsers = useMemo(() => {
     const term = query.trim().toLowerCase();
@@ -55,6 +78,7 @@ export function AdminUsersPage() {
 
       <div className="space-y-5 p-6">
         {error ? <MessageBox tone="error">{error}</MessageBox> : null}
+        {success ? <MessageBox tone="success">{success}</MessageBox> : null}
 
         <section className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
           <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
@@ -129,6 +153,19 @@ export function AdminUsersPage() {
                       <td className="px-4 py-4 text-slate-600">{user.enrolled_course_ids.length}</td>
                       <td className="px-4 py-4 text-slate-600">{user.instructor_course_ids.length}</td>
                       <td className="px-4 py-4">
+                        <button
+                          type="button"
+                          onClick={() => void handleStatusToggle(user)}
+                          disabled={workingId === user.id}
+                          className={[
+                            "mr-2 inline-flex items-center gap-2 rounded-lg px-3 py-2 font-semibold disabled:opacity-60",
+                            user.is_active
+                              ? "border border-slate-300 text-slate-700 hover:bg-slate-100"
+                              : "bg-blue-600 text-white hover:bg-blue-700"
+                          ].join(" ")}
+                        >
+                          {user.is_active ? "Suspend" : "Activate"}
+                        </button>
                         <Link
                           to={`/admin/users/${user.id}/edit`}
                           className="inline-flex items-center gap-2 rounded-lg border border-slate-300 px-3 py-2 font-semibold text-slate-700 hover:bg-slate-100"

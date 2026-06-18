@@ -1,6 +1,7 @@
 import { Navigate, createBrowserRouter } from "react-router-dom";
 import { ProtectedRoute } from "../auth/ProtectedRoute";
 import { AppLayout } from "../layouts/AppLayout";
+import { AdminApprovalsPage } from "../pages/admin/AdminApprovalsPage";
 import { AdminCoursesPage } from "../pages/admin/AdminCoursesPage";
 import { AdminCourseCreatePage } from "../pages/admin/AdminCourseCreatePage";
 import { AdminDashboardPage } from "../pages/admin/AdminDashboardPage";
@@ -35,6 +36,7 @@ export const router = createBrowserRouter([
         element: <ProtectedRoute allowedRoles={["admin"]} />,
         children: [
           { path: "admin/dashboard", element: <AdminDashboardPage /> },
+          { path: "admin/approvals", element: <AdminApprovalsPage /> },
           { path: "admin/users", element: <AdminUsersPage /> },
           { path: "admin/users/create", element: <AdminUserCreatePage /> },
           { path: "admin/users/:id/edit", element: <AdminUserEditPage /> },

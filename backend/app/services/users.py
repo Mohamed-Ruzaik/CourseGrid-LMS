@@ -2,7 +2,7 @@ from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from app.core.security import hash_password, verify_password
-from app.models.user import User
+from app.models.user import User, UserRole
 from app.schemas.auth import UserCreate
 
 
@@ -20,6 +20,7 @@ def create_user(db: Session, user_data: UserCreate) -> User:
         email=user_data.email.lower(),
         password_hash=hash_password(user_data.password),
         role=user_data.role,
+        is_active=user_data.role == UserRole.student,
     )
     db.add(user)
     db.commit()

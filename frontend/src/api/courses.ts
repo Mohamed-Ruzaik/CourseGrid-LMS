@@ -1,9 +1,12 @@
 import { apiClient } from "./client";
-import type { Course, CoursePayload, Enrollment } from "../types/course";
+import type { Course, CoursePayload, Enrollment, InstructorCourseRequest } from "../types/course";
 
-export async function fetchCourses(options?: { enrolled?: boolean }) {
+export async function fetchCourses(options?: { enrolled?: boolean; available?: boolean }) {
   const response = await apiClient.get<Course[]>("/courses", {
-    params: options?.enrolled ? { enrolled: true } : undefined
+    params: {
+      ...(options?.enrolled ? { enrolled: true } : {}),
+      ...(options?.available ? { available: true } : {})
+    }
   });
   return response.data;
 }
@@ -29,5 +32,10 @@ export async function deleteCourse(courseId: number) {
 
 export async function enrollInCourse(courseId: number) {
   const response = await apiClient.post<Enrollment>(`/courses/${courseId}/enroll`);
+  return response.data;
+}
+
+export async function requestInstructorCourse(courseId: number) {
+  const response = await apiClient.post<InstructorCourseRequest>(`/courses/${courseId}/request-instructor`);
   return response.data;
 }

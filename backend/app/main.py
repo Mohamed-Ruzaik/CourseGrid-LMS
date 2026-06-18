@@ -8,6 +8,7 @@ from sqlalchemy import inspect, text
 from app.api.routes import (
     analytics,
     announcements,
+    approvals,
     assignments,
     auth,
     content,
@@ -67,6 +68,7 @@ app.add_middleware(
 app.include_router(auth.router)
 app.include_router(analytics.router)
 app.include_router(announcements.router)
+app.include_router(approvals.router)
 app.include_router(assignments.router)
 app.include_router(content.router)
 app.include_router(courses.router)

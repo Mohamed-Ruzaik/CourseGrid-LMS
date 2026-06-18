@@ -64,3 +64,29 @@ class CourseInstructor(Base):
         default=lambda: datetime.now(timezone.utc),
         nullable=False,
     )
+
+
+class InstructorCourseRequestStatus(str, enum.Enum):
+    pending = "pending"
+    approved = "approved"
+    rejected = "rejected"
+
+
+class InstructorCourseRequest(Base):
+    __tablename__ = "instructor_course_requests"
+    __table_args__ = (UniqueConstraint("course_id", "instructor_id", name="uq_instructor_course_request"),)
+
+    id: Mapped[int] = mapped_column(primary_key=True, index=True)
+    course_id: Mapped[int] = mapped_column(ForeignKey("courses.id"), index=True, nullable=False)
+    instructor_id: Mapped[int] = mapped_column(ForeignKey("users.id"), index=True, nullable=False)
+    status: Mapped[InstructorCourseRequestStatus] = mapped_column(
+        Enum(InstructorCourseRequestStatus, native_enum=False),
+        default=InstructorCourseRequestStatus.pending,
+        nullable=False,
+    )
+    requested_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True),
+        default=lambda: datetime.now(timezone.utc),
+        nullable=False,
+    )
+    reviewed_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)

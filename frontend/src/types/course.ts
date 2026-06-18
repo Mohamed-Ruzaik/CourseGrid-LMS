@@ -10,6 +10,7 @@ export type Course = {
   created_at: string;
   updated_at: string;
   is_enrolled: boolean;
+  instructor_request_status: "pending" | "approved" | "rejected" | null;
 };
 
 export type CoursePayload = {
@@ -25,4 +26,13 @@ export type Enrollment = {
   user_id: number;
   course_id: number;
   enrolled_at: string;
+};
+
+export type InstructorCourseRequest = {
+  id: number;
+  course_id: number;
+  instructor_id: number;
+  status: "pending" | "approved" | "rejected";
+  requested_at: string;
+  reviewed_at: string | null;
 };

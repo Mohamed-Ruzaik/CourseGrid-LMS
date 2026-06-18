@@ -1,7 +1,14 @@
 from sqlalchemy import delete, or_, select
 from sqlalchemy.orm import Session
 
-from app.models.course import Course, CourseInstructor, CourseStatus, Enrollment
+from app.models.course import (
+    Course,
+    CourseInstructor,
+    CourseStatus,
+    Enrollment,
+    InstructorCourseRequest,
+    InstructorCourseRequestStatus,
+)
 from app.models.user import User, UserRole
 from app.schemas.course import CourseCreate, CourseUpdate
 
@@ -13,7 +20,7 @@ def get_enrolled_course_ids(db: Session, user_id: int) -> set[int]:
 
 
 def list_courses_for_user(
-    db: Session, current_user: User, enrolled_only: bool = False
+    db: Session, current_user: User, enrolled_only: bool = False, available: bool = False
 ) -> list[Course]:
     statement = select(Course).order_by(Course.created_at.desc())
 
@@ -21,6 +28,8 @@ def list_courses_for_user(
         return list(db.scalars(statement))
 
     if current_user.role == UserRole.instructor:
+        if available:
+            return list(db.scalars(statement.where(Course.status == CourseStatus.published)))
         return list(
             db.scalars(
                 statement.outerjoin(CourseInstructor, CourseInstructor.course_id == Course.id)
@@ -40,6 +49,18 @@ def list_courses_for_user(
         statement = statement.where(Course.status == CourseStatus.published)
 
     return list(db.scalars(statement))
+
+
+def get_instructor_request_status(
+    db: Session, course_id: int, instructor_id: int
+) -> InstructorCourseRequestStatus | None:
+    request = db.scalar(
+        select(InstructorCourseRequest).where(
+            InstructorCourseRequest.course_id == course_id,
+            InstructorCourseRequest.instructor_id == instructor_id,
+        )
+    )
+    return request.status if request else None
 
 
 def get_course(db: Session, course_id: int) -> Course | None:
@@ -97,6 +118,29 @@ def _sync_course_instructors(db: Session, course: Course, instructor_ids: list[i
     db.execute(delete(CourseInstructor).where(CourseInstructor.course_id == course.id))
     for instructor_id in unique_ids:
         db.add(CourseInstructor(course_id=course.id, instructor_id=instructor_id))
+
+
+def request_instructor_course_access(db: Session, course: Course, instructor: User) -> InstructorCourseRequest:
+    existing = db.scalar(
+        select(InstructorCourseRequest).where(
+            InstructorCourseRequest.course_id == course.id,
+            InstructorCourseRequest.instructor_id == instructor.id,
+        )
+    )
+    if existing:
+        if existing.status == InstructorCourseRequestStatus.rejected:
+            existing.status = InstructorCourseRequestStatus.pending
+            existing.reviewed_at = None
+            db.add(existing)
+            db.commit()
+            db.refresh(existing)
+        return existing
+
+    request = InstructorCourseRequest(course_id=course.id, instructor_id=instructor.id)
+    db.add(request)
+    db.commit()
+    db.refresh(request)
+    return request
 
 
 def create_course(db: Session, course_data: CourseCreate, current_user: User) -> Course:

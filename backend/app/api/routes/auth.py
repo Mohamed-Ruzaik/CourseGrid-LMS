@@ -2,10 +2,10 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 
 from app.api.deps import db_session, get_current_user
-from app.core.security import create_access_token
+from app.core.security import create_access_token, verify_password
 from app.models.user import User
 from app.schemas.auth import TokenResponse, UserCreate, UserLogin, UserRead, UserUpdate
-from app.services.users import authenticate_user, create_user, get_user_by_email
+from app.services.users import create_user, get_user_by_email
 
 router = APIRouter(prefix="/auth", tags=["auth"])
 
@@ -24,11 +24,16 @@ def register(user_data: UserCreate, db: Session = Depends(db_session)) -> User:
 
 @router.post("/login", response_model=TokenResponse)
 def login(credentials: UserLogin, db: Session = Depends(db_session)) -> TokenResponse:
-    user = authenticate_user(db, credentials.email, credentials.password)
-    if user is None:
+    user = get_user_by_email(db, credentials.email)
+    if user is None or not verify_password(credentials.password, user.password_hash):
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Invalid email or password",
+        )
+    if not user.is_active:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Account is pending admin approval or suspended",
         )
 
     access_token = create_access_token(
