@@ -104,17 +104,17 @@ export function AppLayout() {
             isSidebarCollapsed ? "justify-center" : "justify-between gap-3"
           ].join(" ")}
         >
-          <div className="flex min-w-0 items-center gap-3">
-          <div className="grid h-8 w-8 shrink-0 grid-cols-2 gap-1 rounded-lg">
+          <div className="flex min-w-0 items-center gap-2">
+          <div className="grid h-6 w-6 shrink-0 grid-cols-2 gap-0.5 rounded-md">
             <span className="rounded bg-blue-500" />
             <span className="rounded bg-blue-500" />
             <span className="rounded bg-blue-500" />
             <span className="rounded bg-blue-500" />
           </div>
           {!isSidebarCollapsed ? (
-            <p className="text-lg font-bold tracking-tight">
+            <p className="text-base font-bold tracking-tight">
               Course<span className="text-blue-400">Grid</span>
-              <span className="ml-2 text-sm font-medium text-slate-400">LMS</span>
+              <span className="ml-1.5 text-xs font-medium text-slate-400">LMS</span>
             </p>
           ) : null}
           </div>
