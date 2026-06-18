@@ -16,6 +16,7 @@ type AuthContextValue = {
   login: (payload: LoginPayload) => Promise<AuthUser>;
   register: (payload: RegisterPayload) => Promise<AuthUser>;
   updateProfile: (payload: UpdateProfilePayload) => Promise<AuthUser>;
+  refreshCurrentUser: () => Promise<AuthUser | null>;
   logout: () => void;
 };
 
@@ -77,6 +78,17 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     return response.data;
   }, []);
 
+  const refreshCurrentUser = useCallback(async () => {
+    try {
+      const response = await apiClient.get<AuthUser>("/auth/me");
+      setUser(response.data);
+      return response.data;
+    } catch {
+      logout();
+      return null;
+    }
+  }, [logout]);
+
   const updateProfile = useCallback(async (payload: UpdateProfilePayload) => {
     const response = await apiClient.patch<AuthUser>("/auth/me", payload);
     setUser(response.data);
@@ -84,8 +96,17 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   const value = useMemo(
-    () => ({ user, token, isBootstrapping, login, register, updateProfile, logout }),
-    [isBootstrapping, login, logout, register, token, updateProfile, user]
+    () => ({
+      user,
+      token,
+      isBootstrapping,
+      login,
+      register,
+      updateProfile,
+      refreshCurrentUser,
+      logout
+    }),
+    [isBootstrapping, login, logout, refreshCurrentUser, register, token, updateProfile, user]
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

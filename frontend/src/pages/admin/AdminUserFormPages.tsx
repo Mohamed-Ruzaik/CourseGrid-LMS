@@ -3,6 +3,7 @@ import { Link, useNavigate, useParams } from "react-router-dom";
 import { ArrowLeft, Save, UserPlus } from "lucide-react";
 import { fetchCourses } from "../../api/courses";
 import { createAdminUser, fetchAdminUser, updateAdminUser } from "../../api/users";
+import { useAuth } from "../../auth/AuthContext";
 import { MessageBox } from "../../components/MessageBox";
 import { PageHeader } from "../../components/PageHeader";
 import type { UserRole } from "../../types/auth";
@@ -66,6 +67,7 @@ type AdminUserFormPageProps = {
 function AdminUserFormPage({ mode }: AdminUserFormPageProps) {
   const { id } = useParams();
   const navigate = useNavigate();
+  const { user, refreshCurrentUser } = useAuth();
   const isEditMode = mode === "edit";
   const [courses, setCourses] = useState<Course[]>([]);
   const [form, setForm] = useState<UserFormState>(emptyForm);
@@ -124,6 +126,9 @@ function AdminUserFormPage({ mode }: AdminUserFormPageProps) {
       setIsSubmitting(true);
       if (isEditMode && id) {
         await updateAdminUser(Number(id), payload);
+        if (user?.id === Number(id)) {
+          await refreshCurrentUser();
+        }
       } else {
         await createAdminUser({ ...payload, password: form.password });
       }
