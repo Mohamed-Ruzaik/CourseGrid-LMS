@@ -8,6 +8,11 @@ export async function fetchAdminUsers(search?: string) {
   return response.data;
 }
 
+export async function fetchAdminUser(userId: string | number) {
+  const response = await apiClient.get<AdminUser>(`/users/${userId}`);
+  return response.data;
+}
+
 export async function createAdminUser(payload: AdminUserPayload & { password: string }) {
   const response = await apiClient.post<AdminUser>("/users", payload);
   return response.data;

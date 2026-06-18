@@ -4,6 +4,7 @@ import { AppLayout } from "../layouts/AppLayout";
 import { AdminCoursesPage } from "../pages/admin/AdminCoursesPage";
 import { AdminCourseCreatePage } from "../pages/admin/AdminCourseCreatePage";
 import { AdminDashboardPage } from "../pages/admin/AdminDashboardPage";
+import { AdminUserCreatePage, AdminUserEditPage } from "../pages/admin/AdminUserFormPages";
 import { AdminUsersPage } from "../pages/admin/AdminUsersPage";
 import { InstructorAssignmentsPage } from "../pages/instructor/InstructorAssignmentsPage";
 import { InstructorCourseBuilderPage } from "../pages/instructor/InstructorCourseBuilderPage";
@@ -34,6 +35,8 @@ export const router = createBrowserRouter([
         children: [
           { path: "admin/dashboard", element: <AdminDashboardPage /> },
           { path: "admin/users", element: <AdminUsersPage /> },
+          { path: "admin/users/create", element: <AdminUserCreatePage /> },
+          { path: "admin/users/:id/edit", element: <AdminUserEditPage /> },
           { path: "admin/courses", element: <AdminCoursesPage /> },
           { path: "admin/courses/create", element: <AdminCourseCreatePage /> },
           { path: "admin/courses/:id/builder", element: <InstructorCourseBuilderPage /> }
