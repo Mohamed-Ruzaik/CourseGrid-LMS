@@ -171,6 +171,29 @@ export function StudentCourseDetailPage() {
           </section>
         ) : null}
 
+        <section className="rounded-xl border border-slate-200 bg-white shadow-sm">
+          <div className="border-b border-slate-200 px-5 py-4">
+            <h2 className="text-sm font-bold uppercase tracking-wide text-slate-500">Announcements</h2>
+          </div>
+          {announcements.length === 0 ? (
+            <p className="p-5 text-sm text-slate-600">No announcements have been posted yet.</p>
+          ) : (
+            <div className="divide-y divide-slate-200">
+              {announcements.map((announcement) => (
+                <article key={announcement.id} className="p-5">
+                  <div className="flex flex-col gap-1 md:flex-row md:items-center md:justify-between">
+                    <h3 className="font-bold text-slate-950">{announcement.title}</h3>
+                    <p className="text-xs text-slate-500">{formatDate(announcement.created_at)}</p>
+                  </div>
+                  <p className="mt-2 whitespace-pre-wrap text-sm leading-6 text-slate-600">
+                    {announcement.message}
+                  </p>
+                </article>
+              ))}
+            </div>
+          )}
+        </section>
+
         {!isLoading && modules.length === 0 ? (
           <MessageBox>No modules have been published for this course yet.</MessageBox>
         ) : null}
@@ -348,28 +371,6 @@ export function StudentCourseDetailPage() {
           </div>
         ) : null}
 
-        <section className="rounded-xl border border-slate-200 bg-white shadow-sm">
-          <div className="border-b border-slate-200 px-5 py-4">
-            <h2 className="text-sm font-bold uppercase tracking-wide text-slate-500">Announcements</h2>
-          </div>
-          {announcements.length === 0 ? (
-            <p className="p-5 text-sm text-slate-600">No announcements have been posted yet.</p>
-          ) : (
-            <div className="divide-y divide-slate-200">
-              {announcements.map((announcement) => (
-                <article key={announcement.id} className="p-5">
-                  <div className="flex flex-col gap-1 md:flex-row md:items-center md:justify-between">
-                    <h3 className="font-bold text-slate-950">{announcement.title}</h3>
-                    <p className="text-xs text-slate-500">{formatDate(announcement.created_at)}</p>
-                  </div>
-                  <p className="mt-2 whitespace-pre-wrap text-sm leading-6 text-slate-600">
-                    {announcement.message}
-                  </p>
-                </article>
-              ))}
-            </div>
-          )}
-        </section>
       </div>
     </>
   );
