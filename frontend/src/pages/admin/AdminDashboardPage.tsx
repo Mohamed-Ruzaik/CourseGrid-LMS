@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useState } from "react";
-import type { ComponentType, ReactNode } from "react";
+import type { ComponentType } from "react";
 import { Link } from "react-router-dom";
-import { BookOpen, ClipboardList, Database, GraduationCap, ShieldCheck, UsersRound } from "lucide-react";
+import { BookOpen, ClipboardList, GraduationCap, UsersRound } from "lucide-react";
 import { fetchAnalyticsSummary } from "../../api/analytics";
 import { useAuth } from "../../auth/AuthContext";
 import { MessageBox } from "../../components/MessageBox";
@@ -31,7 +31,7 @@ export function AdminDashboardPage() {
   }, [loadSummary]);
 
   return (
-    <div className="mx-auto grid max-w-[1280px] gap-6 xl:grid-cols-[1fr_320px]">
+    <div className="mx-auto max-w-[1280px]">
       <section className="space-y-7">
         <div>
           <h1 className="text-3xl font-bold tracking-tight text-slate-950">
@@ -72,18 +72,6 @@ export function AdminDashboardPage() {
           </div>
         </section>
       </section>
-
-      <aside className="space-y-5">
-        <SidePanel title="System Snapshot">
-          <HealthRow label="API readiness" value="Healthy" />
-          <HealthRow label="Database" value="PostgreSQL" />
-          <HealthRow label="Deployment mode" value="Docker" />
-        </SidePanel>
-        <SidePanel title="DevOps Highlights">
-          <ActionRow icon={ShieldCheck} title="Role-based access" note="Admin, instructor, and student routes are protected." to="/admin/users" compact />
-          <ActionRow icon={Database} title="Seeded data model" note="Courses, modules, lessons, assignments, and submissions are represented." to="/admin/courses" compact />
-        </SidePanel>
-      </aside>
     </div>
   );
 }
@@ -120,18 +108,9 @@ function OverviewCard({ note, title, value }: { note: string; title: string; val
   );
 }
 
-function SidePanel({ children, title }: { children: ReactNode; title: string }) {
+function ActionRow({ icon: Icon, note, title, to }: { icon: ComponentType<{ className?: string }>; note: string; title: string; to: string }) {
   return (
-    <section className="rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
-      <h2 className="mb-6 text-lg font-bold text-slate-950">{title}</h2>
-      <div className="space-y-5">{children}</div>
-    </section>
-  );
-}
-
-function ActionRow({ compact = false, icon: Icon, note, title, to }: { compact?: boolean; icon: ComponentType<{ className?: string }>; note: string; title: string; to: string }) {
-  return (
-    <Link to={to} className={`flex gap-4 rounded-xl border border-slate-100 p-4 transition hover:border-blue-200 hover:bg-blue-50 ${compact ? "" : "bg-white"}`}>
+    <Link to={to} className="flex gap-4 rounded-xl border border-slate-100 bg-white p-4 transition hover:border-blue-200 hover:bg-blue-50">
       <div className="grid h-12 w-12 place-items-center rounded-xl bg-blue-50 text-blue-600">
         <Icon className="h-6 w-6" aria-hidden="true" />
       </div>
@@ -140,14 +119,5 @@ function ActionRow({ compact = false, icon: Icon, note, title, to }: { compact?:
         <p className="mt-1 text-sm leading-6 text-slate-500">{note}</p>
       </div>
     </Link>
-  );
-}
-
-function HealthRow({ label, value }: { label: string; value: string }) {
-  return (
-    <div className="flex items-center justify-between rounded-xl bg-slate-50 px-4 py-3">
-      <span className="text-sm font-semibold text-slate-600">{label}</span>
-      <span className="text-sm font-bold text-slate-950">{value}</span>
-    </div>
   );
 }

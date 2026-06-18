@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useState } from "react";
-import type { ComponentType, ReactNode } from "react";
+import type { ComponentType } from "react";
 import { Link } from "react-router-dom";
-import { BookOpen, ClipboardList, GraduationCap, MessageSquare, PenLine, TrendingUp } from "lucide-react";
+import { BookOpen, ClipboardList, PenLine, TrendingUp } from "lucide-react";
 import { fetchAnalyticsSummary } from "../../api/analytics";
 import { useAuth } from "../../auth/AuthContext";
 import { MessageBox } from "../../components/MessageBox";
@@ -35,7 +35,7 @@ export function InstructorDashboardPage() {
     : 0;
 
   return (
-    <div className="mx-auto grid max-w-[1280px] gap-6 xl:grid-cols-[1fr_320px]">
+    <div className="mx-auto max-w-[1280px]">
       <section className="space-y-7">
         <div>
           <h1 className="text-3xl font-bold tracking-tight text-slate-950">
@@ -69,27 +69,13 @@ export function InstructorDashboardPage() {
         </section>
 
         <section className="rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
-          <h2 className="text-xl font-bold text-slate-950">Priority Actions</h2>
+          <h2 className="text-xl font-bold text-slate-950">Instructor Actions</h2>
           <div className="mt-5 grid gap-4 md:grid-cols-2">
             <ActionRow icon={PenLine} title="Review new submissions" note={`${ungradedCount} submissions need feedback`} to="/instructor/submissions" />
             <ActionRow icon={ClipboardList} title="Create assignment" note="Add a new text-based course task" to="/instructor/assignments" />
           </div>
         </section>
       </section>
-
-      <aside className="space-y-5">
-        <SidePanel title="Recent Teaching Notes">
-          <ActionRow icon={MessageSquare} title="Feedback reminder" note="Keep feedback short, specific, and actionable." to="/instructor/submissions" compact />
-          <ActionRow icon={GraduationCap} title="Course builder" note="Add modules and lessons for your active courses." to="/instructor/courses" compact />
-        </SidePanel>
-        <SidePanel title="Course Health">
-          <div className="space-y-4">
-            <HealthRow label="Content coverage" value="82%" />
-            <HealthRow label="Grading progress" value={`${summary?.total_submissions ? Math.round(((summary.total_graded_submissions ?? 0) / summary.total_submissions) * 100) : 0}%`} />
-            <HealthRow label="Enrollment activity" value={String(summary?.total_enrollments ?? 0)} />
-          </div>
-        </SidePanel>
-      </aside>
     </div>
   );
 }
@@ -126,18 +112,9 @@ function OverviewCard({ note, title, value }: { note: string; title: string; val
   );
 }
 
-function SidePanel({ children, title }: { children: ReactNode; title: string }) {
+function ActionRow({ icon: Icon, note, title, to }: { icon: ComponentType<{ className?: string }>; note: string; title: string; to: string }) {
   return (
-    <section className="rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
-      <h2 className="mb-6 text-lg font-bold text-slate-950">{title}</h2>
-      <div className="space-y-5">{children}</div>
-    </section>
-  );
-}
-
-function ActionRow({ compact = false, icon: Icon, note, title, to }: { compact?: boolean; icon: ComponentType<{ className?: string }>; note: string; title: string; to: string }) {
-  return (
-    <Link to={to} className={`flex gap-4 rounded-xl border border-slate-100 p-4 transition hover:border-blue-200 hover:bg-blue-50 ${compact ? "" : "bg-white"}`}>
+    <Link to={to} className="flex gap-4 rounded-xl border border-slate-100 bg-white p-4 transition hover:border-blue-200 hover:bg-blue-50">
       <div className="grid h-12 w-12 place-items-center rounded-xl bg-blue-50 text-blue-600">
         <Icon className="h-6 w-6" aria-hidden="true" />
       </div>
@@ -146,14 +123,5 @@ function ActionRow({ compact = false, icon: Icon, note, title, to }: { compact?:
         <p className="mt-1 text-sm leading-6 text-slate-500">{note}</p>
       </div>
     </Link>
-  );
-}
-
-function HealthRow({ label, value }: { label: string; value: string }) {
-  return (
-    <div className="flex items-center justify-between rounded-xl bg-slate-50 px-4 py-3">
-      <span className="text-sm font-semibold text-slate-600">{label}</span>
-      <span className="text-sm font-bold text-slate-950">{value}</span>
-    </div>
   );
 }
