@@ -121,6 +121,7 @@ def test_assignment_submission_and_grading_flow() -> None:
     assert submission_response.status_code == 201
     submission_id = submission_response.json()["id"]
     assert submission_response.json()["student_id"] == student_id
+    assert submission_response.json()["attempt_count"] == 1
     assert submission_response.json()["grade"] is None
 
     submissions_for_owner = client.get(
@@ -174,4 +175,47 @@ def test_assignment_submission_and_grading_flow() -> None:
         headers=auth_headers(student_token),
     )
     assert student_assignments_after_grade.json()[0]["submitted"] is True
+    assert student_assignments_after_grade.json()[0]["attempt_count"] == 1
     assert student_assignments_after_grade.json()[0]["grade"] == 44
+
+    second_attempt = client.post(
+        f"/assignments/{assignment_id}/submit",
+        headers=auth_headers(student_token),
+        json={"content": "Updated reflection attempt two."},
+    )
+    assert second_attempt.status_code == 201
+    assert second_attempt.json()["attempt_count"] == 2
+
+    third_attempt = client.post(
+        f"/assignments/{assignment_id}/submit",
+        headers=auth_headers(student_token),
+        json={"content": "Updated reflection attempt three."},
+    )
+    assert third_attempt.status_code == 201
+    assert third_attempt.json()["attempt_count"] == 3
+
+    fourth_attempt = client.post(
+        f"/assignments/{assignment_id}/submit",
+        headers=auth_headers(student_token),
+        json={"content": "Blocked attempt four."},
+    )
+    assert fourth_attempt.status_code == 400
+
+    past_assignment = client.post(
+        f"/courses/{course_id}/assignments",
+        headers=auth_headers(instructor_token),
+        json={
+            "title": "Past Due",
+            "description": "This should be locked.",
+            "due_date": "2020-01-01T12:00:00Z",
+            "max_points": 25,
+        },
+    )
+    assert past_assignment.status_code == 201
+
+    past_due_submit = client.post(
+        f"/assignments/{past_assignment.json()['id']}/submit",
+        headers=auth_headers(student_token),
+        json={"content": "Too late."},
+    )
+    assert past_due_submit.status_code == 400

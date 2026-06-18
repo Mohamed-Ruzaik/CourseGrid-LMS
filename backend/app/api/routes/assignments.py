@@ -56,6 +56,7 @@ def serialize_assignment(db: Session, assignment: Assignment, current_user: User
     if current_user.role == UserRole.student:
         submission = get_submission_for_student(db, assignment.id, current_user.id)
         assignment_read.submitted = submission is not None
+        assignment_read.attempt_count = submission.attempt_count if submission else 0
         assignment_read.grade = submission.grade if submission else None
         assignment_read.feedback = submission.feedback if submission else None
     return assignment_read

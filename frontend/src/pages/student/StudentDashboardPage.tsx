@@ -1,29 +1,39 @@
 import { useCallback, useEffect, useState } from "react";
 import type { ComponentType } from "react";
 import { Link } from "react-router-dom";
-import {
-  BookOpen,
-  ClipboardList,
-  Code2,
-  Star,
-  CheckCircle2
-} from "lucide-react";
+import { BookOpen, CheckCircle2, ClipboardList, Code2, PlayCircle, Star } from "lucide-react";
 import { fetchAnalyticsSummary } from "../../api/analytics";
+import { fetchCourseContent } from "../../api/content";
 import { fetchCourses } from "../../api/courses";
 import { useAuth } from "../../auth/AuthContext";
 import { MessageBox } from "../../components/MessageBox";
 import type { AnalyticsSummary } from "../../types/analytics";
+import type { ModuleWithLessons } from "../../types/content";
 import type { Course } from "../../types/course";
 import { getApiErrorMessage } from "../../utils/errorMessage";
+
+type ContinueTarget = {
+  course: Course;
+  module: ModuleWithLessons | null;
+};
+
+function findActiveModule(modules: ModuleWithLessons[]) {
+  return (
+    modules.find((module) => module.lessons.some((lesson) => !lesson.is_completed)) ??
+    modules[0] ??
+    null
+  );
+}
 
 export function StudentDashboardPage() {
   const { user } = useAuth();
   const [courses, setCourses] = useState<Course[]>([]);
   const [summary, setSummary] = useState<AnalyticsSummary | null>(null);
+  const [continueTarget, setContinueTarget] = useState<ContinueTarget | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState("");
 
-  const loadEnrolledCourses = useCallback(async () => {
+  const loadDashboard = useCallback(async () => {
     setIsLoading(true);
     setError("");
     try {
@@ -33,6 +43,22 @@ export function StudentDashboardPage() {
       ]);
       setCourses(courseData);
       setSummary(summaryData);
+
+      const contentGroups = await Promise.all(
+        courseData.map(async (course) => ({
+          course,
+          modules: await fetchCourseContent(course.id)
+        }))
+      );
+      const activeCourse =
+        contentGroups.find((group) =>
+          group.modules.some((module) => module.lessons.some((lesson) => !lesson.is_completed))
+        ) ?? contentGroups[0];
+      setContinueTarget(
+        activeCourse
+          ? { course: activeCourse.course, module: findActiveModule(activeCourse.modules) }
+          : null
+      );
     } catch (loadError) {
       setError(getApiErrorMessage(loadError, "Could not load student dashboard."));
     } finally {
@@ -41,55 +67,54 @@ export function StudentDashboardPage() {
   }, []);
 
   useEffect(() => {
-    void loadEnrolledCourses();
-  }, [loadEnrolledCourses]);
+    void loadDashboard();
+  }, [loadDashboard]);
 
   return (
     <div className="mx-auto max-w-[1280px]">
-      <section className="space-y-7">
+      <section className="space-y-6">
         <div>
           <h1 className="text-3xl font-bold tracking-tight text-slate-950">
             Good morning, {user?.name?.split(" ")[0] ?? "Student"}!
           </h1>
-          <p className="mt-2 text-lg text-slate-600">Let's continue your learning journey.</p>
+          <p className="mt-2 text-base text-slate-600">Let's continue your learning journey.</p>
         </div>
 
         {error ? <MessageBox tone="error">{error}</MessageBox> : null}
 
-        <div className="grid gap-5 md:grid-cols-2 xl:grid-cols-4">
-          <DashboardStat
-            icon={BookOpen}
-            tone="blue"
-            label="Enrolled Courses"
-            value={summary?.total_courses ?? 0}
-            action="View all"
-            to="/student/courses"
-          />
-          <DashboardStat
-            icon={CheckCircle2}
-            tone="green"
-            label="Completed Lessons"
-            value={summary?.completed_lessons ?? 0}
-            action="View courses"
-            to="/student/courses"
-          />
-          <DashboardStat
-            icon={ClipboardList}
-            tone="amber"
-            label="Pending Assignments"
-            value={summary?.pending_assignments ?? 0}
-            action="View assignments"
-            to="/student/assignments"
-          />
-          <DashboardStat
-            icon={Star}
-            tone="purple"
-            label="Graded Submissions"
-            value={summary?.total_graded_submissions ?? 0}
-            action="View grades"
-            to="/student/grades"
-          />
+        <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+          <DashboardStat icon={BookOpen} tone="blue" label="Enrolled Courses" value={summary?.total_courses ?? 0} to="/student/courses" />
+          <DashboardStat icon={CheckCircle2} tone="green" label="Completed Lessons" value={summary?.completed_lessons ?? 0} to="/student/courses" />
+          <DashboardStat icon={ClipboardList} tone="amber" label="Pending Assignments" value={summary?.pending_assignments ?? 0} to="/student/assignments" />
+          <DashboardStat icon={Star} tone="purple" label="Graded Submissions" value={summary?.total_graded_submissions ?? 0} to="/student/grades" />
         </div>
+
+        <section className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
+          <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+            <div>
+              <p className="text-xs font-bold uppercase tracking-wide text-slate-500">Continue learning</p>
+              <h2 className="mt-2 text-xl font-bold text-slate-950">
+                {continueTarget?.course.title ?? "No active course yet"}
+              </h2>
+              <p className="mt-2 text-sm text-slate-600">
+                {continueTarget?.module
+                  ? `Last active module: Module ${continueTarget.module.position} - ${continueTarget.module.title}`
+                  : isLoading
+                    ? "Finding your latest course progress..."
+                    : "Enroll in a course to start learning."}
+              </p>
+            </div>
+            {continueTarget ? (
+              <Link
+                to={`/student/courses/${continueTarget.course.id}`}
+                className="inline-flex items-center justify-center gap-2 rounded-lg bg-blue-600 px-4 py-3 text-sm font-bold text-white hover:bg-blue-700"
+              >
+                <PlayCircle className="h-4 w-4" aria-hidden="true" />
+                Resume course
+              </Link>
+            ) : null}
+          </div>
+        </section>
 
         <section className="rounded-xl border border-slate-200 bg-white shadow-sm">
           <div className="flex items-center justify-between px-6 py-5">
@@ -104,34 +129,23 @@ export function StudentDashboardPage() {
           ) : courses.length === 0 ? (
             <div className="px-6 pb-6">
               <p className="text-sm text-slate-600">You are not enrolled in any courses yet.</p>
-              <Link
-                to="/student/courses"
-                className="mt-4 inline-flex rounded-lg bg-blue-600 px-4 py-2 text-sm font-bold text-white hover:bg-blue-700"
-              >
-                Browse courses
-              </Link>
             </div>
           ) : (
-            <div className="divide-y divide-slate-200 px-4 pb-2">
-              {courses.slice(0, 4).map((course) => (
-                  <article
-                    key={course.id}
-                    className="grid gap-4 px-2 py-5 md:grid-cols-[76px_1fr_120px] md:items-center"
-                  >
-                    <div className="grid h-16 w-16 place-items-center rounded-xl bg-blue-50 text-blue-600">
-                      <Code2 className="h-7 w-7" aria-hidden="true" />
-                    </div>
-                    <div>
-                      <h3 className="font-bold text-slate-950">{course.title}</h3>
-                      <p className="mt-2 line-clamp-2 text-sm text-slate-500">{course.description}</p>
-                    </div>
-                    <Link
-                      to={`/student/courses/${course.id}`}
-                      className="rounded-lg bg-blue-50 px-4 py-3 text-center text-sm font-bold text-blue-600 hover:bg-blue-100"
-                    >
-                      Continue
-                    </Link>
-                  </article>
+            <div className="grid gap-4 px-6 pb-6 md:grid-cols-2 xl:grid-cols-3">
+              {courses.slice(0, 6).map((course) => (
+                <Link
+                  key={course.id}
+                  to={`/student/courses/${course.id}`}
+                  className="rounded-xl border border-slate-200 bg-slate-50 p-4 transition hover:border-blue-200 hover:bg-blue-50"
+                >
+                  <div className="grid h-12 w-12 place-items-center rounded-xl bg-blue-100 text-blue-600">
+                    <Code2 className="h-6 w-6" aria-hidden="true" />
+                  </div>
+                  <h3 className="mt-4 font-bold text-slate-950">{course.title}</h3>
+                  <p className="mt-2 line-clamp-2 text-sm text-slate-600">
+                    {course.description || "No description provided."}
+                  </p>
+                </Link>
               ))}
             </div>
           )}
@@ -144,14 +158,12 @@ export function StudentDashboardPage() {
 type StatTone = "blue" | "green" | "amber" | "purple";
 
 function DashboardStat({
-  action,
   icon: Icon,
   label,
   to,
   tone,
   value
 }: {
-  action: string;
   icon: ComponentType<{ className?: string }>;
   label: string;
   to: string;
@@ -166,15 +178,12 @@ function DashboardStat({
   };
 
   return (
-    <article className="rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
-      <div className={`grid h-14 w-14 place-items-center rounded-xl ${toneClasses[tone]}`}>
-        <Icon className="h-7 w-7" aria-hidden="true" />
+    <Link to={to} className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm transition hover:border-blue-200 hover:shadow-md">
+      <div className={`grid h-10 w-10 place-items-center rounded-lg ${toneClasses[tone]}`}>
+        <Icon className="h-5 w-5" aria-hidden="true" />
       </div>
-      <p className="mt-7 text-3xl font-bold text-slate-950">{value}</p>
-      <p className="mt-2 text-slate-600">{label}</p>
-      <Link to={to} className="mt-7 inline-block text-sm font-bold text-blue-600">
-        {action}
-      </Link>
-    </article>
+      <p className="mt-4 text-2xl font-bold text-slate-950">{value}</p>
+      <p className="mt-1 text-sm text-slate-600">{label}</p>
+    </Link>
   );
 }

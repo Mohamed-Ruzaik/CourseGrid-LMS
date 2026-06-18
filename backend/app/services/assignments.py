@@ -1,5 +1,6 @@
 from datetime import datetime, timezone
 
+from fastapi import HTTPException, status
 from sqlalchemy import delete, select
 from sqlalchemy.orm import Session
 
@@ -130,10 +131,27 @@ def list_all_submissions(db: Session) -> list[Submission]:
     return list(db.scalars(select(Submission).order_by(Submission.submitted_at.desc())))
 
 
+def is_past_due(due_date: datetime | None) -> bool:
+    if due_date is None:
+        return False
+    if due_date.tzinfo is None:
+        due_date = due_date.replace(tzinfo=timezone.utc)
+    return due_date < datetime.now(timezone.utc)
+
+
 def submit_assignment(db: Session, assignment_id: int, student_id: int, data: SubmissionCreate) -> Submission:
+    assignment = get_assignment(db, assignment_id)
+    if assignment is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Assignment not found")
+    if is_past_due(assignment.due_date):
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Assignment due date has passed")
+
     existing = get_submission_for_student(db, assignment_id, student_id)
     if existing:
+        if existing.attempt_count >= 3:
+            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Submission attempt limit reached")
         existing.content = data.content.strip()
+        existing.attempt_count += 1
         existing.submitted_at = datetime.now(timezone.utc)
         existing.grade = None
         existing.feedback = None
@@ -147,6 +165,7 @@ def submit_assignment(db: Session, assignment_id: int, student_id: int, data: Su
         assignment_id=assignment_id,
         student_id=student_id,
         content=data.content.strip(),
+        attempt_count=1,
     )
     db.add(submission)
     db.commit()

@@ -3,6 +3,7 @@ from contextlib import asynccontextmanager
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from sqlalchemy import inspect, text
 
 from app.api.routes import (
     analytics,
@@ -20,10 +21,28 @@ from app.db.database import engine
 from app.models import User
 
 
+def ensure_dev_schema() -> None:
+    Base.metadata.create_all(bind=engine)
+    inspector = inspect(engine)
+    if "submissions" not in inspector.get_table_names():
+        return
+    submission_columns = {column["name"] for column in inspector.get_columns("submissions")}
+    if "attempt_count" in submission_columns:
+        return
+
+    if engine.dialect.name == "postgresql":
+        statement = "ALTER TABLE submissions ADD COLUMN IF NOT EXISTS attempt_count INTEGER NOT NULL DEFAULT 1"
+    else:
+        statement = "ALTER TABLE submissions ADD COLUMN attempt_count INTEGER NOT NULL DEFAULT 1"
+
+    with engine.begin() as connection:
+        connection.execute(text(statement))
+
+
 @asynccontextmanager
 async def lifespan(_: FastAPI) -> AsyncIterator[None]:
     try:
-        Base.metadata.create_all(bind=engine)
+        ensure_dev_schema()
     except Exception:
         # /ready reports database availability; auth routes require the database.
         pass

@@ -38,6 +38,7 @@ class Submission(Base):
     assignment_id: Mapped[int] = mapped_column(ForeignKey("assignments.id"), index=True, nullable=False)
     student_id: Mapped[int] = mapped_column(ForeignKey("users.id"), index=True, nullable=False)
     content: Mapped[str] = mapped_column(Text, nullable=False)
+    attempt_count: Mapped[int] = mapped_column(Integer, default=1, nullable=False)
     grade: Mapped[float | None] = mapped_column(Float, nullable=True)
     feedback: Mapped[str | None] = mapped_column(Text, nullable=True)
     submitted_at: Mapped[datetime] = mapped_column(

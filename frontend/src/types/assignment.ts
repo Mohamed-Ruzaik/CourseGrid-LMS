@@ -6,6 +6,7 @@ export type Assignment = {
   due_date: string | null;
   max_points: number;
   submitted: boolean;
+  attempt_count: number;
   grade: number | null;
   feedback: string | null;
   created_at: string;
@@ -24,6 +25,7 @@ export type Submission = {
   assignment_id: number;
   student_id: number;
   content: string;
+  attempt_count: number;
   grade: number | null;
   feedback: string | null;
   submitted_at: string;

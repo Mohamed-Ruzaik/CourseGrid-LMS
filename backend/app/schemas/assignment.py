@@ -25,6 +25,7 @@ class AssignmentRead(BaseModel):
     due_date: datetime | None
     max_points: float
     submitted: bool = False
+    attempt_count: int = 0
     grade: float | None = None
     feedback: str | None = None
     created_at: datetime
@@ -47,6 +48,7 @@ class SubmissionRead(BaseModel):
     assignment_id: int
     student_id: int
     content: str
+    attempt_count: int
     grade: float | None
     feedback: str | None
     submitted_at: datetime
