@@ -114,7 +114,7 @@ function AdminUserFormPage({ mode }: AdminUserFormPageProps) {
       email: form.email.trim(),
       role: form.role,
       is_active: form.is_active,
-      enrolled_course_ids: form.enrolled_course_ids,
+      enrolled_course_ids: form.role === "student" ? form.enrolled_course_ids : [],
       instructor_course_ids: form.role === "instructor" ? form.instructor_course_ids : []
     };
 
@@ -252,20 +252,10 @@ function AdminUserFormPage({ mode }: AdminUserFormPageProps) {
               Active account
             </label>
 
-            <CourseChecklist
-              title="Enrollments"
-              description="Courses this user is enrolled in."
-              courses={courses}
-              selectedCourseIds={form.enrolled_course_ids}
-              onToggle={(courseId) =>
-                updateForm("enrolled_course_ids", toggleCourse(form.enrolled_course_ids, courseId))
-              }
-            />
-
             {form.role === "instructor" ? (
               <CourseChecklist
                 title="Instructor courses"
-                description="Courses this instructor can manage. Multiple instructors can be assigned to the same course."
+                description="Courses this instructor can manage."
                 courses={courses}
                 selectedCourseIds={form.instructor_course_ids}
                 onToggle={(courseId) =>
@@ -273,6 +263,18 @@ function AdminUserFormPage({ mode }: AdminUserFormPageProps) {
                     "instructor_course_ids",
                     toggleCourse(form.instructor_course_ids, courseId)
                   )
+                }
+              />
+            ) : null}
+
+            {form.role === "student" ? (
+              <CourseChecklist
+                title="Enrollments"
+                description="Courses this student is enrolled in."
+                courses={courses}
+                selectedCourseIds={form.enrolled_course_ids}
+                onToggle={(courseId) =>
+                  updateForm("enrolled_course_ids", toggleCourse(form.enrolled_course_ids, courseId))
                 }
               />
             ) : null}

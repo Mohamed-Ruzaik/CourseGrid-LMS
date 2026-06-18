@@ -4,8 +4,7 @@ import {
   approveInstructorCourseRequest,
   approveUser,
   fetchApprovals,
-  rejectInstructorCourseRequest,
-  suspendUser
+  rejectInstructorCourseRequest
 } from "../../api/approvals";
 import { MessageBox } from "../../components/MessageBox";
 import { PageHeader } from "../../components/PageHeader";
@@ -189,44 +188,6 @@ export function AdminApprovalsPage() {
                       </button>
                     </div>
                   </div>
-                </article>
-              ))}
-            </div>
-          )}
-        </section>
-
-        <section className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
-          <h2 className="text-lg font-bold text-slate-950">Active and suspended users</h2>
-          <p className="mt-1 text-sm text-slate-600">
-            Use this list for quick activate/suspend actions. Full user editing is still available in Users.
-          </p>
-          {!summary ? null : (
-            <div className="mt-5 grid gap-3 md:grid-cols-2 xl:grid-cols-3">
-              {summary.users.map((user) => (
-                <article key={user.id} className="rounded-xl border border-slate-200 bg-slate-50 p-4">
-                  <p className="font-bold text-slate-950">{user.name}</p>
-                  <p className="mt-1 text-sm text-slate-500">{user.email}</p>
-                  <p className="mt-2 text-xs font-bold uppercase tracking-wide text-slate-500">
-                    {user.role} · {user.is_active ? "active" : "inactive"}
-                  </p>
-                  <button
-                    type="button"
-                    onClick={() =>
-                      void runAction(
-                        `${user.is_active ? "suspend" : "approve"}-quick-${user.id}`,
-                        () => (user.is_active ? suspendUser(user.id) : approveUser(user.id)),
-                        user.is_active ? `${user.name} suspended.` : `${user.name} activated.`
-                      )
-                    }
-                    className={[
-                      "mt-4 rounded-lg px-3 py-2 text-sm font-bold",
-                      user.is_active
-                        ? "border border-slate-300 text-slate-700 hover:bg-white"
-                        : "bg-blue-600 text-white hover:bg-blue-700"
-                    ].join(" ")}
-                  >
-                    {user.is_active ? "Suspend" : "Activate"}
-                  </button>
                 </article>
               ))}
             </div>
