@@ -30,6 +30,14 @@ export type Submission = {
   graded_at: string | null;
 };
 
+export type AssignmentStudentSubmission = {
+  student_id: number;
+  student_name: string;
+  student_email: string;
+  submitted: boolean;
+  submission: Submission | null;
+};
+
 export type SubmissionPayload = {
   content: string;
 };

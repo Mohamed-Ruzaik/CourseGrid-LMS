@@ -60,6 +60,9 @@ def test_assignment_submission_and_grading_flow() -> None:
         "assignments-other-instructor@example.com", "instructor"
     )
     student_token, student_id = create_account("assignments-student@example.com", "student")
+    unsubmitted_student_token, unsubmitted_student_id = create_account(
+        "assignments-unsubmitted-student@example.com", "student"
+    )
 
     course_response = client.post(
         "/courses",
@@ -101,6 +104,7 @@ def test_assignment_submission_and_grading_flow() -> None:
     assert student_before_enrollment.status_code == 403
 
     client.post(f"/courses/{course_id}/enroll", headers=auth_headers(student_token))
+    client.post(f"/courses/{course_id}/enroll", headers=auth_headers(unsubmitted_student_token))
 
     student_assignments = client.get(
         f"/courses/{course_id}/assignments",
@@ -125,6 +129,17 @@ def test_assignment_submission_and_grading_flow() -> None:
     )
     assert submissions_for_owner.status_code == 200
     assert submissions_for_owner.json()[0]["content"] == "My submitted reflection."
+
+    student_submission_rows = client.get(
+        f"/assignments/{assignment_id}/students",
+        headers=auth_headers(instructor_token),
+    )
+    assert student_submission_rows.status_code == 200
+    rows_by_student = {row["student_id"]: row for row in student_submission_rows.json()}
+    assert rows_by_student[student_id]["submitted"] is True
+    assert rows_by_student[student_id]["submission"]["content"] == "My submitted reflection."
+    assert rows_by_student[unsubmitted_student_id]["submitted"] is False
+    assert rows_by_student[unsubmitted_student_id]["submission"] is None
 
     submissions_for_other_instructor = client.get(
         f"/assignments/{assignment_id}/submissions",

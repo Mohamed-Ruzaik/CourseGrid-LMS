@@ -8,6 +8,7 @@ from app.models.user import User, UserRole
 from app.schemas.assignment import (
     AssignmentCreate,
     AssignmentRead,
+    AssignmentStudentSubmissionRead,
     AssignmentUpdate,
     SubmissionCreate,
     SubmissionGrade,
@@ -21,6 +22,7 @@ from app.services.assignments import (
     get_submission,
     get_submission_for_student,
     grade_submission,
+    list_assignment_student_submissions,
     list_all_submissions,
     list_assignments_for_course,
     list_submissions_for_assignment,
@@ -137,6 +139,28 @@ def list_assignment_submissions(
     if not can_manage_assignment(db, course, current_user):
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Assignment access denied")
     return list_submissions_for_assignment(db, assignment_id)
+
+
+@router.get("/assignments/{assignment_id}/students", response_model=list[AssignmentStudentSubmissionRead])
+def list_assignment_students(
+    assignment_id: int,
+    db: Session = Depends(db_session),
+    current_user: User = Depends(require_admin_or_instructor),
+) -> list[AssignmentStudentSubmissionRead]:
+    assignment, course = require_assignment_with_course(db, assignment_id)
+    if not can_manage_assignment(db, course, current_user):
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Assignment access denied")
+
+    return [
+        AssignmentStudentSubmissionRead(
+            student_id=student.id,
+            student_name=student.name,
+            student_email=student.email,
+            submitted=submission is not None,
+            submission=SubmissionRead.model_validate(submission) if submission else None,
+        )
+        for student, submission in list_assignment_student_submissions(db, assignment)
+    ]
 
 
 @router.get("/submissions", response_model=list[SubmissionRead])

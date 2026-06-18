@@ -78,6 +78,27 @@ def list_submissions_for_assignment(db: Session, assignment_id: int) -> list[Sub
     )
 
 
+def list_assignment_student_submissions(db: Session, assignment: Assignment) -> list[tuple[User, Submission | None]]:
+    enrolled_students = list(
+        db.scalars(
+            select(User)
+            .join(Enrollment, Enrollment.user_id == User.id)
+            .where(
+                Enrollment.course_id == assignment.course_id,
+                User.role == UserRole.student,
+            )
+            .order_by(User.name.asc())
+        )
+    )
+    submissions = {
+        submission.student_id: submission
+        for submission in db.scalars(
+            select(Submission).where(Submission.assignment_id == assignment.id)
+        )
+    }
+    return [(student, submissions.get(student.id)) for student in enrolled_students]
+
+
 def list_submissions_for_student(db: Session, student_id: int) -> list[Submission]:
     return list(
         db.scalars(

@@ -53,3 +53,11 @@ class SubmissionRead(BaseModel):
     graded_at: datetime | None
 
     model_config = {"from_attributes": True}
+
+
+class AssignmentStudentSubmissionRead(BaseModel):
+    student_id: int
+    student_name: str
+    student_email: str
+    submitted: bool
+    submission: SubmissionRead | None = None

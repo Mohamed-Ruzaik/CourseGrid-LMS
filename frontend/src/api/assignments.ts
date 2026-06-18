@@ -1,6 +1,7 @@
 import { apiClient } from "./client";
 import type {
   Assignment,
+  AssignmentStudentSubmission,
   AssignmentPayload,
   GradePayload,
   Submission,
@@ -36,6 +37,13 @@ export async function submitAssignment(assignmentId: number, payload: Submission
 
 export async function fetchAssignmentSubmissions(assignmentId: number) {
   const response = await apiClient.get<Submission[]>(`/assignments/${assignmentId}/submissions`);
+  return response.data;
+}
+
+export async function fetchAssignmentStudents(assignmentId: number) {
+  const response = await apiClient.get<AssignmentStudentSubmission[]>(
+    `/assignments/${assignmentId}/students`
+  );
   return response.data;
 }
 
