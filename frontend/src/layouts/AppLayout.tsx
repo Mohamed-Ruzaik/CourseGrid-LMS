@@ -1,6 +1,6 @@
 import { NavLink, Outlet, useLocation } from "react-router-dom";
 import type { ComponentType } from "react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
   BookOpen,
   ClipboardList,
@@ -39,6 +39,8 @@ const navItems: AppNavItem[] = [
   { label: "Settings", path: "/settings", roles: ["admin", "instructor", "student"], icon: Settings }
 ];
 
+const SIDEBAR_PIN_STORAGE_KEY = "coursegrid_sidebar_pinned";
+
 function getInitials(name?: string) {
   if (!name) {
     return "CG";
@@ -55,9 +57,17 @@ function getInitials(name?: string) {
 export function AppLayout() {
   const { user, logout } = useAuth();
   const location = useLocation();
-  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
+  const [isSidebarPinned, setIsSidebarPinned] = useState(
+    () => window.localStorage.getItem(SIDEBAR_PIN_STORAGE_KEY) === "true"
+  );
+  const [isSidebarHovered, setIsSidebarHovered] = useState(false);
   const isAuthenticated = Boolean(user);
   const isAuthRoute = location.pathname === "/login" || location.pathname === "/register";
+  const isSidebarCollapsed = !isSidebarPinned && !isSidebarHovered;
+
+  useEffect(() => {
+    window.localStorage.setItem(SIDEBAR_PIN_STORAGE_KEY, String(isSidebarPinned));
+  }, [isSidebarPinned]);
 
   if (isAuthRoute) {
     return <Outlet />;
@@ -81,6 +91,8 @@ export function AppLayout() {
   return (
     <div className="min-h-screen bg-[#f7f9fd] text-slate-950 lg:grid lg:grid-cols-[auto_1fr]">
       <aside
+        onMouseEnter={() => setIsSidebarHovered(true)}
+        onMouseLeave={() => setIsSidebarHovered(false)}
         className={[
           "sticky top-0 hidden h-screen overflow-auto border-r border-white/10 bg-slate-800 text-white shadow-2xl shadow-slate-900/15 transition-[width] duration-200 lg:flex lg:flex-col",
           isSidebarCollapsed
@@ -111,25 +123,28 @@ export function AppLayout() {
           {!isSidebarCollapsed ? (
             <button
               type="button"
-              onClick={() => setIsSidebarCollapsed(true)}
+              onClick={() => setIsSidebarPinned((current) => !current)}
               className="grid h-9 w-9 shrink-0 place-items-center rounded-lg text-slate-300 transition hover:bg-white/10 hover:text-white"
-              aria-label="Collapse sidebar"
+              aria-label={isSidebarPinned ? "Unpin sidebar" : "Pin sidebar"}
+              title={isSidebarPinned ? "Unpin sidebar" : "Pin sidebar"}
             >
-              <PanelLeftClose className="h-5 w-5" aria-hidden="true" />
+              {isSidebarPinned ? (
+                <PanelLeftClose className="h-5 w-5" aria-hidden="true" />
+              ) : (
+                <PanelLeftOpen className="h-5 w-5" aria-hidden="true" />
+              )}
             </button>
           ) : null}
         </div>
 
         <nav className={["flex-1 space-y-3 py-7", isSidebarCollapsed ? "px-3" : "px-4"].join(" ")}>
           {isSidebarCollapsed ? (
-            <button
-              type="button"
-              onClick={() => setIsSidebarCollapsed(false)}
-              className="mb-4 grid h-12 w-full place-items-center rounded-xl text-slate-200 transition hover:bg-white/10 hover:text-white"
-              aria-label="Expand sidebar"
+            <div
+              className="mb-4 grid h-12 w-full place-items-center rounded-xl text-slate-400"
+              aria-hidden="true"
             >
-              <PanelLeftOpen className="h-5 w-5" aria-hidden="true" />
-            </button>
+              <PanelLeftOpen className="h-5 w-5" />
+            </div>
           ) : null}
           {visibleNavItems.map((item) => {
             const Icon = item.icon ?? LayoutDashboard;
