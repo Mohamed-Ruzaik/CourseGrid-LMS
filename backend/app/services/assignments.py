@@ -4,7 +4,7 @@ from sqlalchemy import delete, select
 from sqlalchemy.orm import Session
 
 from app.models.assignment import Assignment, Submission
-from app.models.course import Course, Enrollment
+from app.models.course import Course, CourseInstructor, Enrollment
 from app.models.user import User, UserRole
 from app.schemas.assignment import AssignmentCreate, AssignmentUpdate, SubmissionCreate, SubmissionGrade
 
@@ -94,7 +94,12 @@ def list_submissions_for_instructor(db: Session, instructor_id: int) -> list[Sub
             select(Submission)
             .join(Assignment, Assignment.id == Submission.assignment_id)
             .join(Course, Course.id == Assignment.course_id)
-            .where(Course.instructor_id == instructor_id)
+            .outerjoin(CourseInstructor, CourseInstructor.course_id == Course.id)
+            .where(
+                (Course.instructor_id == instructor_id)
+                | (CourseInstructor.instructor_id == instructor_id)
+            )
+            .distinct()
             .order_by(Submission.submitted_at.desc())
         )
     )
@@ -154,7 +159,19 @@ def student_is_enrolled(db: Session, course_id: int, student_id: int) -> bool:
     )
 
 
-def can_manage_assignment(course: Course, user: User) -> bool:
+def can_manage_assignment(db: Session, course: Course, user: User) -> bool:
     if user.role == UserRole.admin:
         return True
-    return user.role == UserRole.instructor and course.instructor_id == user.id
+    return (
+        user.role == UserRole.instructor
+        and (
+            course.instructor_id == user.id
+            or db.scalar(
+                select(CourseInstructor.id).where(
+                    CourseInstructor.course_id == course.id,
+                    CourseInstructor.instructor_id == user.id,
+                )
+            )
+            is not None
+        )
+    )

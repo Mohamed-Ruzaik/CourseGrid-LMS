@@ -14,6 +14,7 @@ from app.services.courses import (
     list_courses_for_user,
     update_course,
     user_can_access_course,
+    user_is_course_instructor,
 )
 
 router = APIRouter(prefix="/courses", tags=["courses"])
@@ -82,7 +83,7 @@ def update_course_route(
     course = get_course(db, course_id)
     if course is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Course not found")
-    if current_user.role == UserRole.instructor and course.instructor_id != current_user.id:
+    if current_user.role == UserRole.instructor and not user_is_course_instructor(db, course.id, current_user.id):
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Course access denied")
 
     return serialize_course(update_course(db, course, course_data, current_user))
@@ -97,7 +98,7 @@ def delete_course_route(
     course = get_course(db, course_id)
     if course is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Course not found")
-    if current_user.role == UserRole.instructor and course.instructor_id != current_user.id:
+    if current_user.role == UserRole.instructor and not user_is_course_instructor(db, course.id, current_user.id):
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Course access denied")
 
     delete_course(db, course)

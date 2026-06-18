@@ -3,7 +3,7 @@ from sqlalchemy.orm import Session
 
 from app.models.assignment import Assignment, Submission
 from app.models.content import Lesson, LessonProgress, Module
-from app.models.course import Course, Enrollment
+from app.models.course import Course, CourseInstructor, Enrollment
 from app.models.user import User, UserRole
 from app.schemas.analytics import AnalyticsSummary
 
@@ -40,17 +40,24 @@ def get_analytics_summary(db: Session, current_user: User) -> AnalyticsSummary:
         )
 
     if current_user.role == UserRole.instructor:
-        instructor_courses = select(Course.id).where(Course.instructor_id == current_user.id)
+        instructor_courses = (
+            select(Course.id)
+            .outerjoin(CourseInstructor, CourseInstructor.course_id == Course.id)
+            .where(
+                (Course.instructor_id == current_user.id)
+                | (CourseInstructor.instructor_id == current_user.id)
+            )
+            .distinct()
+        )
         instructor_assignments = (
             select(Assignment.id)
             .join(Course, Course.id == Assignment.course_id)
-            .where(Course.instructor_id == current_user.id)
+            .where(Assignment.course_id.in_(instructor_courses))
         )
         instructor_submissions = (
             select(Submission.id)
             .join(Assignment, Assignment.id == Submission.assignment_id)
-            .join(Course, Course.id == Assignment.course_id)
-            .where(Course.instructor_id == current_user.id)
+            .where(Assignment.course_id.in_(instructor_courses))
         )
 
         return AnalyticsSummary(

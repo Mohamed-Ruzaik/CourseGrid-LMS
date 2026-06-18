@@ -28,7 +28,7 @@ from app.services.content import (
     update_lesson,
     update_module,
 )
-from app.services.courses import get_course, user_can_access_course
+from app.services.courses import get_course, user_can_access_course, user_is_course_instructor
 
 router = APIRouter(tags=["content"])
 
@@ -42,10 +42,10 @@ def require_course_access(db: Session, course_id: int, current_user: User) -> Co
     return course
 
 
-def require_course_manager(course: Course, current_user: User) -> None:
+def require_course_manager(db: Session, course: Course, current_user: User) -> None:
     if current_user.role == UserRole.admin:
         return
-    if current_user.role == UserRole.instructor and course.instructor_id == current_user.id:
+    if current_user.role == UserRole.instructor and user_is_course_instructor(db, course.id, current_user.id):
         return
     raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Course access denied")
 
@@ -88,7 +88,7 @@ def create_course_module(
     current_user: User = Depends(require_admin_or_instructor),
 ) -> Module:
     course = require_course_access(db, course_id, current_user)
-    require_course_manager(course, current_user)
+    require_course_manager(db, course, current_user)
     return create_module(db, course_id, module_data)
 
 
@@ -102,7 +102,7 @@ def update_course_module(
     module = get_module(db, module_id)
     if module is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Module not found")
-    require_course_manager(module_course(db, module), current_user)
+    require_course_manager(db, module_course(db, module), current_user)
     return update_module(db, module, module_data)
 
 
@@ -115,7 +115,7 @@ def delete_course_module(
     module = get_module(db, module_id)
     if module is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Module not found")
-    require_course_manager(module_course(db, module), current_user)
+    require_course_manager(db, module_course(db, module), current_user)
     delete_module(db, module)
 
 
@@ -147,7 +147,7 @@ def create_module_lesson(
     module = get_module(db, module_id)
     if module is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Module not found")
-    require_course_manager(module_course(db, module), current_user)
+    require_course_manager(db, module_course(db, module), current_user)
     return serialize_lesson(create_lesson(db, module_id, lesson_data))
 
 
@@ -161,7 +161,7 @@ def update_module_lesson(
     lesson = get_lesson(db, lesson_id)
     if lesson is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Lesson not found")
-    require_course_manager(module_course(db, lesson_module(db, lesson)), current_user)
+    require_course_manager(db, module_course(db, lesson_module(db, lesson)), current_user)
     return serialize_lesson(update_lesson(db, lesson, lesson_data))
 
 
@@ -174,7 +174,7 @@ def delete_module_lesson(
     lesson = get_lesson(db, lesson_id)
     if lesson is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Lesson not found")
-    require_course_manager(module_course(db, lesson_module(db, lesson)), current_user)
+    require_course_manager(db, module_course(db, lesson_module(db, lesson)), current_user)
     delete_lesson(db, lesson)
 
 

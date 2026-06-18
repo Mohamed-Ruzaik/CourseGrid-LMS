@@ -1,7 +1,7 @@
-from sqlalchemy import delete, select
+from sqlalchemy import delete, or_, select
 from sqlalchemy.orm import Session
 
-from app.models.course import Course, CourseStatus, Enrollment
+from app.models.course import Course, CourseInstructor, CourseStatus, Enrollment
 from app.models.user import User, UserRole
 from app.schemas.course import CourseCreate, CourseUpdate
 
@@ -22,7 +22,16 @@ def list_courses_for_user(
 
     if current_user.role == UserRole.instructor:
         return list(
-            db.scalars(statement.where(Course.instructor_id == current_user.id))
+            db.scalars(
+                statement.outerjoin(CourseInstructor, CourseInstructor.course_id == Course.id)
+                .where(
+                    or_(
+                        Course.instructor_id == current_user.id,
+                        CourseInstructor.instructor_id == current_user.id,
+                    )
+                )
+                .distinct()
+            )
         )
 
     if enrolled_only:
@@ -41,12 +50,31 @@ def user_can_access_course(db: Session, user: User, course: Course) -> bool:
     if user.role == UserRole.admin:
         return True
     if user.role == UserRole.instructor:
-        return course.instructor_id == user.id
+        return user_is_course_instructor(db, course.id, user.id)
     return (
         db.scalar(
             select(Enrollment.id).where(
                 Enrollment.user_id == user.id,
                 Enrollment.course_id == course.id,
+            )
+        )
+        is not None
+    )
+
+
+def user_is_course_instructor(db: Session, course_id: int, instructor_id: int) -> bool:
+    return (
+        db.scalar(
+            select(Course.id).where(
+                Course.id == course_id,
+                Course.instructor_id == instructor_id,
+            )
+        )
+        is not None
+        or db.scalar(
+            select(CourseInstructor.id).where(
+                CourseInstructor.course_id == course_id,
+                CourseInstructor.instructor_id == instructor_id,
             )
         )
         is not None
@@ -66,6 +94,8 @@ def create_course(db: Session, course_data: CourseCreate, current_user: User) ->
         instructor_id=instructor_id,
     )
     db.add(course)
+    db.flush()
+    db.add(CourseInstructor(course_id=course.id, instructor_id=instructor_id))
     db.commit()
     db.refresh(course)
     return course
@@ -85,6 +115,19 @@ def update_course(db: Session, course: Course, course_data: CourseUpdate, curren
         and current_user.role == UserRole.admin
     ):
         course.instructor_id = updates["instructor_id"]
+        existing = db.scalar(
+            select(CourseInstructor).where(
+                CourseInstructor.course_id == course.id,
+                CourseInstructor.instructor_id == updates["instructor_id"],
+            )
+        )
+        if existing is None:
+            db.add(
+                CourseInstructor(
+                    course_id=course.id,
+                    instructor_id=updates["instructor_id"],
+                )
+            )
 
     db.add(course)
     db.commit()
@@ -94,6 +137,7 @@ def update_course(db: Session, course: Course, course_data: CourseUpdate, curren
 
 def delete_course(db: Session, course: Course) -> None:
     db.execute(delete(Enrollment).where(Enrollment.course_id == course.id))
+    db.execute(delete(CourseInstructor).where(CourseInstructor.course_id == course.id))
     db.delete(course)
     db.commit()
 

@@ -50,3 +50,17 @@ class Enrollment(Base):
         default=lambda: datetime.now(timezone.utc),
         nullable=False,
     )
+
+
+class CourseInstructor(Base):
+    __tablename__ = "course_instructors"
+    __table_args__ = (UniqueConstraint("course_id", "instructor_id", name="uq_course_instructor"),)
+
+    id: Mapped[int] = mapped_column(primary_key=True, index=True)
+    course_id: Mapped[int] = mapped_column(ForeignKey("courses.id"), index=True, nullable=False)
+    instructor_id: Mapped[int] = mapped_column(ForeignKey("users.id"), index=True, nullable=False)
+    assigned_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True),
+        default=lambda: datetime.now(timezone.utc),
+        nullable=False,
+    )

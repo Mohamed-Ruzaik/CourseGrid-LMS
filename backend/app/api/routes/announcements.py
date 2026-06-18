@@ -6,7 +6,7 @@ from app.models.course import Course
 from app.models.user import User, UserRole
 from app.schemas.announcement import AnnouncementCreate, AnnouncementRead
 from app.services.announcements import create_announcement, list_announcements_for_course
-from app.services.courses import get_course, user_can_access_course
+from app.services.courses import get_course, user_can_access_course, user_is_course_instructor
 
 router = APIRouter(tags=["announcements"])
 
@@ -42,6 +42,6 @@ def create_course_announcement(
     current_user: User = Depends(require_admin_or_instructor),
 ) -> AnnouncementRead:
     course = require_course(course_id, db)
-    if current_user.role == UserRole.instructor and course.instructor_id != current_user.id:
+    if current_user.role == UserRole.instructor and not user_is_course_instructor(db, course.id, current_user.id):
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Course access denied")
     return create_announcement(db, course.id, current_user.id, data)

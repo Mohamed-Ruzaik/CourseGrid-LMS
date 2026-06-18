@@ -68,7 +68,7 @@ def list_course_assignments(
     course = require_course(course_id, db)
     if current_user.role == UserRole.student and not student_is_enrolled(db, course_id, current_user.id):
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Course access denied")
-    if current_user.role == UserRole.instructor and course.instructor_id != current_user.id:
+    if current_user.role == UserRole.instructor and not can_manage_assignment(db, course, current_user):
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Course access denied")
     assignments = list_assignments_for_course(db, course_id)
     return [serialize_assignment(db, assignment, current_user) for assignment in assignments]
@@ -82,7 +82,7 @@ def create_course_assignment(
     current_user: User = Depends(require_admin_or_instructor),
 ) -> AssignmentRead:
     course = require_course(course_id, db)
-    if not can_manage_assignment(course, current_user):
+    if not can_manage_assignment(db, course, current_user):
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Course access denied")
     return serialize_assignment(db, create_assignment(db, course_id, data), current_user)
 
@@ -95,7 +95,7 @@ def update_course_assignment(
     current_user: User = Depends(require_admin_or_instructor),
 ) -> AssignmentRead:
     assignment, course = require_assignment_with_course(db, assignment_id)
-    if not can_manage_assignment(course, current_user):
+    if not can_manage_assignment(db, course, current_user):
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Assignment access denied")
     return serialize_assignment(db, update_assignment(db, assignment, data), current_user)
 
@@ -107,7 +107,7 @@ def delete_course_assignment(
     current_user: User = Depends(require_admin_or_instructor),
 ) -> None:
     assignment, course = require_assignment_with_course(db, assignment_id)
-    if not can_manage_assignment(course, current_user):
+    if not can_manage_assignment(db, course, current_user):
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Assignment access denied")
     delete_assignment(db, assignment)
 
@@ -134,7 +134,7 @@ def list_assignment_submissions(
     current_user: User = Depends(require_admin_or_instructor),
 ) -> list[Submission]:
     _, course = require_assignment_with_course(db, assignment_id)
-    if not can_manage_assignment(course, current_user):
+    if not can_manage_assignment(db, course, current_user):
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Assignment access denied")
     return list_submissions_for_assignment(db, assignment_id)
 
@@ -162,7 +162,7 @@ def grade_assignment_submission(
     if submission is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Submission not found")
     assignment, course = require_assignment_with_course(db, submission.assignment_id)
-    if not can_manage_assignment(course, current_user):
+    if not can_manage_assignment(db, course, current_user):
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Submission access denied")
     if data.grade > assignment.max_points:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Grade exceeds max points")
