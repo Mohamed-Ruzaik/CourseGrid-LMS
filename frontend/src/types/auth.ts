@@ -18,6 +18,10 @@ export type RegisterPayload = LoginPayload & {
   role: UserRole;
 };
 
+export type UpdateProfilePayload = {
+  name: string;
+};
+
 export type AuthResponse = {
   access_token: string;
   token_type: "bearer";

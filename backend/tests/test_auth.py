@@ -67,3 +67,21 @@ def test_register_login_and_me_flow() -> None:
 
     assert me_response.status_code == 200
     assert me_response.json()["email"] == payload["email"]
+
+    update_response = client.patch(
+        "/auth/me",
+        json={"name": "Updated Admin User"},
+        headers={"Authorization": f"Bearer {login_data['access_token']}"},
+    )
+
+    assert update_response.status_code == 200
+    assert update_response.json()["name"] == "Updated Admin User"
+    assert update_response.json()["email"] == payload["email"]
+
+    updated_me_response = client.get(
+        "/auth/me",
+        headers={"Authorization": f"Bearer {login_data['access_token']}"},
+    )
+
+    assert updated_me_response.status_code == 200
+    assert updated_me_response.json()["name"] == "Updated Admin User"

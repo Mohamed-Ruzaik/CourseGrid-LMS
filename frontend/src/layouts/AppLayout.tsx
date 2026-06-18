@@ -9,6 +9,7 @@ import {
   LogOut,
   PanelLeftClose,
   PanelLeftOpen,
+  Settings,
   UsersRound
 } from "lucide-react";
 import { useAuth } from "../auth/AuthContext";
@@ -34,7 +35,8 @@ const navItems: AppNavItem[] = [
   { label: "Dashboard", path: "/student/dashboard", roles: ["student"], icon: LayoutDashboard },
   { label: "My Courses", path: "/student/courses", roles: ["student"], icon: BookOpen },
   { label: "Assignments", path: "/student/assignments", roles: ["student"], icon: ClipboardList },
-  { label: "Grades", path: "/student/grades", roles: ["student"], icon: GraduationCap }
+  { label: "Grades", path: "/student/grades", roles: ["student"], icon: GraduationCap },
+  { label: "Settings", path: "/settings", roles: ["admin", "instructor", "student"], icon: Settings }
 ];
 
 function getInitials(name?: string) {

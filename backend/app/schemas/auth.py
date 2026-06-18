@@ -15,6 +15,10 @@ class UserLogin(BaseModel):
     password: str = Field(min_length=1, max_length=128)
 
 
+class UserUpdate(BaseModel):
+    name: str = Field(min_length=2, max_length=120)
+
+
 class UserRead(BaseModel):
     id: int
     name: str

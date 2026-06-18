@@ -1,6 +1,12 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useState } from "react";
 import { apiClient } from "../api/client";
-import type { AuthResponse, AuthUser, LoginPayload, RegisterPayload } from "../types/auth";
+import type {
+  AuthResponse,
+  AuthUser,
+  LoginPayload,
+  RegisterPayload,
+  UpdateProfilePayload
+} from "../types/auth";
 import { clearStoredToken, getStoredToken, storeToken } from "./storage";
 
 type AuthContextValue = {
@@ -9,6 +15,7 @@ type AuthContextValue = {
   isBootstrapping: boolean;
   login: (payload: LoginPayload) => Promise<AuthUser>;
   register: (payload: RegisterPayload) => Promise<AuthUser>;
+  updateProfile: (payload: UpdateProfilePayload) => Promise<AuthUser>;
   logout: () => void;
 };
 
@@ -70,9 +77,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     return response.data;
   }, []);
 
+  const updateProfile = useCallback(async (payload: UpdateProfilePayload) => {
+    const response = await apiClient.patch<AuthUser>("/auth/me", payload);
+    setUser(response.data);
+    return response.data;
+  }, []);
+
   const value = useMemo(
-    () => ({ user, token, isBootstrapping, login, register, logout }),
-    [isBootstrapping, login, logout, register, token, user]
+    () => ({ user, token, isBootstrapping, login, register, updateProfile, logout }),
+    [isBootstrapping, login, logout, register, token, updateProfile, user]
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

@@ -12,6 +12,7 @@ import { InstructorDashboardPage } from "../pages/instructor/InstructorDashboard
 import { InstructorSubmissionsPage } from "../pages/instructor/InstructorSubmissionsPage";
 import { LoginPage } from "../pages/public/LoginPage";
 import { RegisterPage } from "../pages/public/RegisterPage";
+import { SettingsPage } from "../pages/settings/SettingsPage";
 import { StudentAssignmentsPage } from "../pages/student/StudentAssignmentsPage";
 import { StudentCourseDetailPage } from "../pages/student/StudentCourseDetailPage";
 import { StudentCoursesPage } from "../pages/student/StudentCoursesPage";
@@ -58,7 +59,10 @@ export const router = createBrowserRouter([
       },
       {
         element: <ProtectedRoute />,
-        children: [{ path: "system-health", element: <SystemHealthPage /> }]
+        children: [
+          { path: "settings", element: <SettingsPage /> },
+          { path: "system-health", element: <SystemHealthPage /> }
+        ]
       }
     ]
   }
